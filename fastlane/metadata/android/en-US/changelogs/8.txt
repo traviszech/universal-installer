@@ -1,4 +1,1 @@
-- Fixed "fade in out" animation when switching tabs (Issue #19)
-- Improved navigation speed and responsiveness on Android 14+
-- Updated core activity transition logic for better compatibility
-- Minor bug fixes and UI improvements
+Fixed tab navigation animations on Android 14+ and improved responsiveness.
