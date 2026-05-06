@@ -41,6 +41,12 @@ abstract class BaseActivity : FragmentActivity() {
         disableSceneTransition()
     }
 
+    override fun onNewIntent(intent: android.content.Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        disableSceneTransition()
+    }
+
     override fun finish() {
         super.finish()
         disableSceneTransition()

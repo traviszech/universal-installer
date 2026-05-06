@@ -54,7 +54,7 @@ fun BottomBar(
                 onClick = {
                     if (!isSelected) {
                         val intent = Intent(context, destination.activityClass).apply {
-                            flags = Intent.FLAG_ACTIVITY_REORDER_TO_FRONT
+                            flags = Intent.FLAG_ACTIVITY_REORDER_TO_FRONT or Intent.FLAG_ACTIVITY_NO_ANIMATION
                         }
                         context.startActivity(intent)
                         (context as? android.app.Activity)?.disableSceneTransition()
