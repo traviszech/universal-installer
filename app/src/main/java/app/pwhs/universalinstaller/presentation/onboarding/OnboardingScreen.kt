@@ -54,6 +54,7 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import app.pwhs.universalinstaller.presentation.setting.dataStore
+import app.pwhs.universalinstaller.util.PermissionMonitor
 import kotlinx.coroutines.launch
 
 private data class OnboardingPage(
@@ -101,6 +102,7 @@ fun OnboardingScreen(
         hasInstallPermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             context.packageManager.canRequestPackageInstalls()
         } else true
+        PermissionMonitor.stop()
         onPauseOrDispose {}
     }
 
@@ -147,6 +149,9 @@ fun OnboardingScreen(
                                 Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
                                 Uri.parse("package:${context.packageName}")
                             )
+                            PermissionMonitor.start(context) {
+                                context.packageManager.canRequestPackageInstalls()
+                            }
                             context.startActivity(intent)
                         }
                     },

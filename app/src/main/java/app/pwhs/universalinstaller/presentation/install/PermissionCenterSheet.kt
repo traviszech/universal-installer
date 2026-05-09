@@ -58,6 +58,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import app.pwhs.universalinstaller.R
+import app.pwhs.universalinstaller.util.PermissionMonitor
 
 /**
  * Identifier for each permission tile. Keeps the composable layer ignorant of which Manifest
@@ -88,6 +89,7 @@ internal fun PermissionCenterSheet(
     var tick by remember { mutableIntStateOf(0) }
     LifecycleResumeEffect(Unit) {
         tick += 1
+        PermissionMonitor.stop() // Stop polling once we're back
         onPauseOrDispose {}
     }
 
@@ -199,10 +201,25 @@ internal fun PermissionCenterSheet(
                                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                                         notificationLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
                                     } else {
-                                        settingsLauncher.launch(appDetailsIntent(context))
+                                        val intent = appDetailsIntent(context)
+                                        PermissionMonitor.start(context) { isNotificationsGranted(context) }
+                                        settingsLauncher.launch(intent)
                                     }
                                 }
-                                else -> grantIntent(context, item.kind)?.let(settingsLauncher::launch)
+                                else -> {
+                                    val intent = grantIntent(context, item.kind)
+                                    if (intent != null) {
+                                        PermissionMonitor.start(context) {
+                                            when (item.kind) {
+                                                PermKind.Install -> isInstallGranted(context)
+                                                PermKind.Storage -> isAllFilesAccessGranted(context)
+                                                PermKind.Usage -> isUsageAccessGranted(context)
+                                                else -> true
+                                            }
+                                        }
+                                        settingsLauncher.launch(intent)
+                                    }
+                                }
                             }
                         },
                     )
