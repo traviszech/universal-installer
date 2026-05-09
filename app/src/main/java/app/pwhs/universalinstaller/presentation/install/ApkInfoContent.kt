@@ -529,7 +529,8 @@ private fun VirusTotalCard(
             }
 
             // "View on VirusTotal" link button
-            if (hasResult && sha256.isNotBlank()) {
+            if (sha256.isNotBlank() && (hasResult || status == VtStatus.NO_API_KEY)) {
+                Spacer(Modifier.height(if (hasResult) 4.dp else 12.dp))
                 TextButton(
                     onClick = {
                         uriHandler.openUri("https://www.virustotal.com/gui/file/$sha256")

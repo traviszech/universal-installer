@@ -1061,13 +1061,9 @@ class InstallViewModel(
         cancelActiveScan()
         scanJob = viewModelScope.launch {
             val apiKey = readVirusTotalApiKey()
-            if (apiKey.isBlank()) {
-                _pendingApkInfo.value = current.copy(vtResult = VtResult(status = VtStatus.NO_API_KEY))
-                return@launch
-            }
-
             val sizeBytes = current.fileSizeBytes
-            if (sizeBytes > VirusTotalService.SIZE_LIMIT_LARGE) {
+
+            if (apiKey.isNotBlank() && sizeBytes > VirusTotalService.SIZE_LIMIT_LARGE) {
                 _pendingApkInfo.value = current.copy(
                     vtResult = VtResult(
                         status = VtStatus.TOO_LARGE,
@@ -1090,11 +1086,21 @@ class InstallViewModel(
                     }
                 }.getOrDefault("")
             }
+
             if (sha256.isBlank()) {
                 finishScanWithError("Could not hash file", fileName)
                 return@launch
             }
+            
+            // Update the APK info with the computed hash
             _pendingApkInfo.value = _pendingApkInfo.value?.copy(sha256 = sha256)
+
+            if (apiKey.isBlank()) {
+                setVt(VtResult(status = VtStatus.NO_API_KEY))
+                virusTotalNotifier.cancel(scanNotifId)
+                scanNotifId = -1
+                return@launch
+            }
 
             val hashResult = virusTotalService.checkFile(apiKey, sha256)
             if (hashResult.status != VtStatus.NOT_FOUND) {
@@ -1307,15 +1313,6 @@ class InstallViewModel(
     private fun launchHashLookupOnly(context: Context, originalUri: Uri) {
         viewModelScope.launch {
             val apiKey = readVirusTotalApiKey()
-            if (apiKey.isBlank()) {
-                // Surface the missing-key state instead of silently leaving the card empty —
-                // otherwise the Check button flips between label states with no feedback.
-                _pendingApkInfo.value = _pendingApkInfo.value?.copy(
-                    vtResult = VtResult(status = VtStatus.NO_API_KEY)
-                )
-                return@launch
-            }
-
             _pendingApkInfo.value = _pendingApkInfo.value?.copy(
                 vtResult = VtResult(status = VtStatus.SCANNING)
             )
@@ -1325,11 +1322,14 @@ class InstallViewModel(
                     val sha256 = context.contentResolver.openInputStream(originalUri)?.use { input ->
                         virusTotalService.computeSha256(input)
                     } ?: ""
-                    if (sha256.isBlank()) "" to VtResult(
-                        status = VtStatus.ERROR,
-                        errorMessage = "Could not hash file",
-                    )
-                    else sha256 to virusTotalService.checkFile(apiKey, sha256)
+                    
+                    if (sha256.isBlank()) {
+                        "" to VtResult(status = VtStatus.ERROR, errorMessage = "Could not hash file")
+                    } else if (apiKey.isBlank()) {
+                        sha256 to VtResult(status = VtStatus.NO_API_KEY)
+                    } else {
+                        sha256 to virusTotalService.checkFile(apiKey, sha256)
+                    }
                 }.getOrElse { e ->
                     Timber.e(e, "VirusTotal hash lookup error")
                     "" to VtResult(status = VtStatus.ERROR, errorMessage = e.message ?: "Unknown error")
