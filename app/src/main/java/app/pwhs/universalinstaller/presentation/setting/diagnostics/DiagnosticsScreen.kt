@@ -92,15 +92,16 @@ private data class LogEntry(
 )
 
 private fun parseLogLine(line: String): LogEntry {
-    // Regex for threadtime: 05-09 15:30:12.123  1234  5678 W MyTag   : My message
-    // Matches: [Date Time] [PID] [TID] [Level] [Tag]: [Message]
-    val regex = Regex("""^(\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\.\d{3})\s+\d+\s+\d+\s([VDIWEF])\s+(.*?)\s*:\s(.*)$""")
+    // Highly flexible regex for threadtime: [Date] [Time] [PID] [TID] [Level] [Tag] : [Message]
+    // Example: 05-09 15:30:12.123  1234  5678 W MyTag   : My message
+    // Note: Spacing can vary significantly between columns.
+    val regex = Regex("""^(\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}\.\d{3})\s+\d+\s+\d+\s+([VDIWEF])\s+(.*?)\s*:\s*(.*)$""")
     val match = regex.find(line)
 
     return if (match != null) {
-        val (time, levelChar, tag, message) = match.destructured
+        val (dateTime, levelChar, tag, message) = match.destructured
         LogEntry(
-            time = time.substringAfter(" "),
+            time = dateTime.substringAfterLast(" ").trim(),
             level = when (levelChar) {
                 "V" -> LogLevel.VERBOSE
                 "D" -> LogLevel.DEBUG
@@ -114,23 +115,19 @@ private fun parseLogLine(line: String): LogEntry {
             raw = line
         )
     } else {
-        // Fallback for other formats or non-standard lines
-        val level = when {
-            line.contains(" E ") || line.contains(" F ") || line.startsWith("E/") -> LogLevel.ERROR
-            line.contains(" W ") || line.startsWith("W/") -> LogLevel.WARN
-            line.contains(" I ") || line.startsWith("I/") -> LogLevel.INFO
-            line.contains(" D ") || line.startsWith("D/") -> LogLevel.DEBUG
-            line.contains(" V ") || line.startsWith("V/") -> LogLevel.VERBOSE
-            else -> LogLevel.OTHER
-        }
-        
-        // Try to see if it's a "simple" format: W/Tag(PID): Message
-        val simpleRegex = Regex("""^([VDIWEF])/(.*?)\(\s*\d+\): (.*)$""")
+        // Fallback 1: Try to find any timestamp in the line
+        val timeRegex = Regex("""(\d{2}:\d{2}:\d{2}\.\d{3})""")
+        val timeMatch = timeRegex.find(line)
+        val extractedTime = timeMatch?.value ?: ""
+
+        // Fallback 2: Simple format like W/Tag(PID): Message
+        val simpleRegex = Regex("""^([VDIWEF])/(.*?)\(\s*\d+\):\s*(.*)$""")
         val simpleMatch = simpleRegex.find(line)
+        
         if (simpleMatch != null) {
             val (levelChar, tag, message) = simpleMatch.destructured
             LogEntry(
-                time = "",
+                time = extractedTime,
                 level = when (levelChar) {
                     "V" -> LogLevel.VERBOSE
                     "D" -> LogLevel.DEBUG
@@ -144,7 +141,16 @@ private fun parseLogLine(line: String): LogEntry {
                 raw = line
             )
         } else {
-            LogEntry("", level, "", line, line)
+            // Fallback 3: Just detect level and keep the rest as message
+            val level = when {
+                line.contains(" E ") || line.contains(" F ") || line.contains("E/") -> LogLevel.ERROR
+                line.contains(" W ") || line.contains("W/") -> LogLevel.WARN
+                line.contains(" I ") || line.contains("I/") -> LogLevel.INFO
+                line.contains(" D ") || line.contains("D/") -> LogLevel.DEBUG
+                line.contains(" V ") || line.contains("V/") -> LogLevel.VERBOSE
+                else -> LogLevel.OTHER
+            }
+            LogEntry(extractedTime, level, "", line, line)
         }
     }
 }
