@@ -16,6 +16,7 @@ import app.pwhs.universalinstaller.presentation.install.controller.ShizukuShellE
 import app.pwhs.universalinstaller.presentation.install.controller.SystemAppMethod
 import app.pwhs.universalinstaller.presentation.setting.PreferencesKeys
 import app.pwhs.universalinstaller.presentation.setting.dataStore
+import androidx.datastore.preferences.core.edit
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -488,6 +489,7 @@ class ManageViewModel(
             // Sensible defaults: Name → Asc (A-Z), Size/date/usage → Desc (big/recent first)
             _sortDirection.value = if (sortBy == UninstallSortBy.Name) SortDirection.Asc else SortDirection.Desc
         }
+        persistFilterSheetState()
     }
 
     fun refreshUsageAccess() {
@@ -515,8 +517,48 @@ class ManageViewModel(
 
     init {
         _usageAccess.value = hasUsageAccess()
+        // Restore the filter sheet's last-known state before the first list emission so we
+        // don't flash the default sort/filter for a frame on launch.
+        viewModelScope.launch {
+            runCatching {
+                val prefs = application.dataStore.data.first()
+                prefs[PreferencesKeys.MANAGE_SORT_BY]
+                    ?.let { name -> UninstallSortBy.entries.firstOrNull { it.name == name } }
+                    ?.let { _sortBy.value = it }
+                prefs[PreferencesKeys.MANAGE_SORT_DIRECTION]
+                    ?.let { name -> SortDirection.entries.firstOrNull { it.name == name } }
+                    ?.let { _sortDirection.value = it }
+                prefs[PreferencesKeys.MANAGE_GROUP_BY]
+                    ?.let { name -> GroupBy.entries.firstOrNull { it.name == name } }
+                    ?.let { _groupBy.value = it }
+                prefs[PreferencesKeys.MANAGE_APP_FILTER]
+                    ?.mapNotNull { name -> AppFilter.entries.firstOrNull { it.name == name } }
+                    ?.toSet()
+                    ?.takeIf { it.isNotEmpty() }
+                    ?.let { _appFilter.value = it }
+            }
+        }
         loadInstalledApps()
         refreshPrivilegedReady()
+    }
+
+    /**
+     * Persists the current filter sheet state. Fire-and-forget; failures are swallowed
+     * because a write failure shouldn't block the UI update — the in-memory flow has
+     * already moved on. Worst case the user re-opens with stale prefs.
+     */
+    private fun persistFilterSheetState() {
+        viewModelScope.launch {
+            runCatching {
+                application.dataStore.edit { prefs ->
+                    prefs[PreferencesKeys.MANAGE_SORT_BY] = _sortBy.value.name
+                    prefs[PreferencesKeys.MANAGE_SORT_DIRECTION] = _sortDirection.value.name
+                    prefs[PreferencesKeys.MANAGE_GROUP_BY] = _groupBy.value.name
+                    prefs[PreferencesKeys.MANAGE_APP_FILTER] =
+                        _appFilter.value.map { it.name }.toSet()
+                }
+            }
+        }
     }
 
     fun onSearchQueryChanged(query: String) {
@@ -533,10 +575,25 @@ class ManageViewModel(
         val next = if (filter in current) current - filter else current + filter
         if (next.isEmpty()) return
         _appFilter.value = next
+        persistFilterSheetState()
     }
 
     fun setGroupBy(groupBy: GroupBy) {
         _groupBy.value = groupBy
+        persistFilterSheetState()
+    }
+
+    /**
+     * Restore the filter sheet to its launch defaults: User-only filter, sort by Name asc,
+     * no grouping. We don't touch the search query or selection — those belong to a separate
+     * UI surface and resetting them here would surprise the user.
+     */
+    fun resetFilters() {
+        _sortBy.value = UninstallSortBy.Name
+        _sortDirection.value = SortDirection.Asc
+        _groupBy.value = GroupBy.None
+        _appFilter.value = setOf(AppFilter.User)
+        persistFilterSheetState()
     }
 
     fun toggleSelection(packageName: String) {

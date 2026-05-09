@@ -8,6 +8,7 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.datastore.preferences.core.stringSetPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -88,6 +89,14 @@ object PreferencesKeys {
      * historical InstallActivity flow (full screen with bottom bar).
      */
     val DIALOG_INSTALL_MODE = booleanPreferencesKey("dialog_install_mode")
+
+    // Manage screen filter-sheet state — persisted so the user's sort/group/filter survives
+    // process death. Enums stored by `name` so renaming a constant breaks loudly rather
+    // than silently mapping to ordinal 0.
+    val MANAGE_SORT_BY = stringPreferencesKey("manage_sort_by")
+    val MANAGE_SORT_DIRECTION = stringPreferencesKey("manage_sort_direction")
+    val MANAGE_GROUP_BY = stringPreferencesKey("manage_group_by")
+    val MANAGE_APP_FILTER = stringSetPreferencesKey("manage_app_filter")
 }
 
 data class SyncOptions(

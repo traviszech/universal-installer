@@ -285,7 +285,11 @@
     <string name="uninstall_current_sort_summary" translatable="false">%1$s %2$s</string>
     <string name="uninstall_filter_sheet_title">Sort &amp; filter</string>
     <string name="uninstall_filter_sort_section">Sort by</string>
+    <string name="uninstall_filter_reset">Reset</string>
     <string name="uninstall_search_hint">Search apps…</string>
+    <string name="uninstall_search_open_cd">Search</string>
+    <string name="uninstall_search_close_cd">Close search</string>
+    <string name="uninstall_search_clear_cd">Clear search</string>
     <string name="uninstall_no_apps_found">No apps found</string>
     <string name="uninstall_no_match">No apps match \&quot;%s\&quot;</string>
     <string name="uninstall_no_user_apps">No user-installed apps found</string>

@@ -395,7 +395,7 @@
     <string name="biometric_install_title">Installation bestätigen</string>
     <string name="biometric_install_sub">Zur Installation dieses Pakets authentifizieren</string>
     <string name="biometric_uninstall_title">Deinstallation bestätigen</string>
-    <string name="biometric_uninstall_sub">Authentifizieren</string>
+    <string name="biometric_uninstall_sub">Authentifizieren, um %1$s zu deinstallieren</string>
     <string name="setting_biometric_install">Authentifizierung zur Installation anfordern</string>
     <string name="setting_biometric_install_sub">Vor jeder Installation mit Fingerabdruck oder Geräteentsperrung bestätigen</string>
     <string name="setting_biometric_uninstall">Authentifizierung zur Deinstallation anfordern</string>

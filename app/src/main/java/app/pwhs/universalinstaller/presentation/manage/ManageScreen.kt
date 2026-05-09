@@ -1,7 +1,13 @@
 package app.pwhs.universalinstaller.presentation.manage
 
+
 import android.content.Intent
 import android.provider.Settings
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -30,36 +36,34 @@ import androidx.compose.material.icons.automirrored.rounded.ReceiptLong
 import androidx.compose.material.icons.rounded.Android
 import androidx.compose.material.icons.rounded.ArrowDownward
 import androidx.compose.material.icons.rounded.ArrowUpward
+import androidx.compose.material.icons.rounded.Block
 import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.DeleteForever
 import androidx.compose.material.icons.rounded.DeleteOutline
 import androidx.compose.material.icons.rounded.FilterList
 import androidx.compose.material.icons.rounded.FolderZip
-import androidx.compose.material.icons.rounded.Block
-import androidx.compose.material.icons.rounded.DeleteForever
 import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material.icons.rounded.Inventory2
-import androidx.compose.material.icons.rounded.Launch
 import androidx.compose.material.icons.rounded.PlayCircle
 import androidx.compose.material.icons.rounded.PowerSettingsNew
-import androidx.compose.material.icons.rounded.Security
-import androidx.compose.material.icons.rounded.Store
 import androidx.compose.material.icons.rounded.RadioButtonUnchecked
 import androidx.compose.material.icons.rounded.Refresh
-import androidx.compose.material.icons.rounded.Share
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material.icons.rounded.SearchOff
+import androidx.compose.material.icons.rounded.Security
 import androidx.compose.material.icons.rounded.SelectAll
+import androidx.compose.material.icons.rounded.Share
+import androidx.compose.material.icons.rounded.Store
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.FloatingActionButtonDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeTopAppBar
@@ -84,10 +88,13 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
@@ -106,15 +113,12 @@ import app.pwhs.universalinstaller.presentation.install.controller.SystemAppMeth
 import app.pwhs.universalinstaller.presentation.manage.logs.UninstallLogsActivity
 import app.pwhs.universalinstaller.presentation.manage.permissions.AppPermissionsActivity
 import app.pwhs.universalinstaller.presentation.setting.dataStore
-import kotlinx.coroutines.flow.map
 import app.pwhs.universalinstaller.util.AppIconData
+import app.pwhs.universalinstaller.util.BiometricGate
 import coil3.compose.SubcomposeAsyncImage
 import coil3.compose.SubcomposeAsyncImageContent
 import coil3.request.ImageRequest
-
-
-
-
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
@@ -156,6 +160,7 @@ fun ManageScreen(
         onRefresh = viewModel::refreshApps,
         onSortChange = viewModel::setSort,
         onGroupByChange = viewModel::setGroupBy,
+        onResetFilters = viewModel::resetFilters,
         onRequestUsageAccess = {
             // Send user to the system Usage Access settings — we re-check on resume via
             // refreshUsageAccess() and reload the list if it flipped.
@@ -199,6 +204,7 @@ private fun UninstallUi(
     onRefresh: () -> Unit = {},
     onSortChange: (UninstallSortBy) -> Unit = {},
     onGroupByChange: (GroupBy) -> Unit = {},
+    onResetFilters: () -> Unit = {},
     onRequestUsageAccess: () -> Unit = {},
     onRefreshUsageAccess: () -> Unit = {},
     onConfirmSystemApp: (SystemAppMethod?) -> Unit = {},
@@ -206,6 +212,7 @@ private fun UninstallUi(
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
+    val resource = LocalResources.current
     var actionTarget by remember { mutableStateOf<InstalledApp?>(null) }
     var confirmUninstallTarget by remember { mutableStateOf<InstalledApp?>(null) }
     var confirmClearDataTarget by remember { mutableStateOf<InstalledApp?>(null) }
@@ -222,11 +229,11 @@ private fun UninstallUi(
         val activity = context as? androidx.fragment.app.FragmentActivity
         if (activity != null) {
             val name = uiState.apps.firstOrNull { it.packageName == pkg }?.appName ?: pkg
-            app.pwhs.universalinstaller.util.BiometricGate.authenticate(
+            BiometricGate.authenticate(
                 activity = activity,
                 enabled = uninstallGateEnabled,
-                title = context.getString(R.string.biometric_uninstall_title),
-                subtitle = context.getString(R.string.biometric_uninstall_sub, name),
+                title = resource.getString(R.string.biometric_uninstall_title),
+                subtitle = resource.getString(R.string.biometric_uninstall_sub, name),
                 onSuccess = { onUninstall(pkg) },
             )
         } else {
@@ -351,8 +358,8 @@ private fun UninstallUi(
                 when (s.mode) {
                     ExtractMode.Backup -> {
                         val res = snackbarHostState.showSnackbar(
-                            message = context.getString(R.string.extract_done, s.file.name),
-                            actionLabel = context.getString(R.string.extract_done_action_open),
+                            message = resource.getString(R.string.extract_done, s.file.name),
+                            actionLabel = resource.getString(R.string.extract_done_action_open),
                             withDismissAction = true,
                         )
                         if (res == SnackbarResult.ActionPerformed) onOpenBackups()
@@ -361,7 +368,7 @@ private fun UninstallUi(
                         val launched = launchShareIntent(context, s.file, s.appName)
                         if (!launched) {
                             snackbarHostState.showSnackbar(
-                                message = context.getString(
+                                message = resource.getString(
                                     R.string.manage_action_share_failed,
                                     "no app accepts the share",
                                 ),
@@ -375,9 +382,9 @@ private fun UninstallUi(
             is ExtractState.Error -> {
                 val msg = when (s.mode) {
                     ExtractMode.Share ->
-                        context.getString(R.string.manage_action_share_failed, s.message)
+                        resource.getString(R.string.manage_action_share_failed, s.message)
                     ExtractMode.Backup ->
-                        context.getString(R.string.extract_failed, s.message)
+                        resource.getString(R.string.extract_failed, s.message)
                 }
                 snackbarHostState.showSnackbar(message = msg, withDismissAction = true)
                 onDismissExtractResult()
@@ -388,6 +395,18 @@ private fun UninstallUi(
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     var showFilterSheet by remember { mutableStateOf(false) }
     var showBatchConfirm by remember { mutableStateOf(false) }
+    // Search bar visibility — toggled by the top-bar search button. Saved across config
+    // changes so a rotation doesn't snap the user out of search. We auto-open it when the
+    // VM still holds a query (e.g. process re-creation while searching).
+    var searchActive by rememberSaveable { mutableStateOf(uiState.searchQuery.isNotBlank()) }
+    val searchFocusRequester = remember { FocusRequester() }
+    LaunchedEffect(searchActive) {
+        if (searchActive) {
+            // requestFocus throws if the node isn't laid out yet — AnimatedVisibility's
+            // entrance handles that timing for us, but the very first frame is still racing.
+            runCatching { searchFocusRequester.requestFocus() }
+        }
+    }
     // Lifted so the filter FAB's long-press can drive the list (scroll to top).
     val listState = rememberLazyListState()
     val coroutineScope = androidx.compose.runtime.rememberCoroutineScope()
@@ -397,10 +416,12 @@ private fun UninstallUi(
             sortBy = uiState.sortBy,
             direction = uiState.sortDirection,
             groupBy = uiState.groupBy,
+            appFilter = uiState.appFilter,
             usageGranted = uiState.usageAccessGranted,
             onSortChange = onSortChange,
             onGroupByChange = onGroupByChange,
             onRequestUsageAccess = onRequestUsageAccess,
+            onResetFilters = onResetFilters,
             onDismiss = { showFilterSheet = false },
         )
     }
@@ -508,6 +529,26 @@ private fun UninstallUi(
                         }
                     },
                     actions = {
+                        IconButton(onClick = {
+                            // Toggle: closing also clears whatever was typed so the next
+                            // open starts from an empty field, matching the user's mental
+                            // model of "X = exit search".
+                            if (searchActive) {
+                                onSearchQueryChanged("")
+                                searchActive = false
+                            } else {
+                                searchActive = true
+                            }
+                        }) {
+                            Icon(
+                                imageVector = if (searchActive) Icons.Rounded.Close
+                                    else Icons.Rounded.Search,
+                                contentDescription = stringResource(
+                                    if (searchActive) R.string.uninstall_search_close_cd
+                                    else R.string.uninstall_search_open_cd,
+                                ),
+                            )
+                        }
                         IconButton(onClick = onRefresh) {
                             Icon(
                                 imageVector = Icons.Rounded.Refresh,
@@ -579,11 +620,20 @@ private fun UninstallUi(
             // Stats banner — recomputed from filteredApps so it follows the active chips.
             // Hidden in selection mode where the top bar already shows "N selected".
             if (!uiState.isSelectionMode) {
-                StatsBanner(apps = uiState.filteredApps)
+                StatsBanner(
+                    apps = uiState.filteredApps,
+                    sortBy = uiState.sortBy,
+                    direction = uiState.sortDirection,
+                )
             }
 
-            // Search bar
-            if (!uiState.isSelectionMode) {
+            // Search bar — only mounted when the user has tapped the top-bar search icon,
+            // freeing up vertical space for the list when search isn't active.
+            AnimatedVisibility(
+                visible = !uiState.isSelectionMode && searchActive,
+                enter = fadeIn() + expandVertically(),
+                exit = fadeOut() + shrinkVertically(),
+            ) {
                 SearchBar(
                     inputField = {
                         SearchBarDefaults.InputField(
@@ -599,6 +649,19 @@ private fun UninstallUi(
                                     contentDescription = null
                                 )
                             },
+                            trailingIcon = if (uiState.searchQuery.isNotEmpty()) {
+                                {
+                                    IconButton(onClick = { onSearchQueryChanged("") }) {
+                                        Icon(
+                                            imageVector = Icons.Rounded.Close,
+                                            contentDescription = stringResource(
+                                                R.string.uninstall_search_clear_cd
+                                            ),
+                                        )
+                                    }
+                                }
+                            } else null,
+                            modifier = Modifier.focusRequester(searchFocusRequester),
                         )
                     },
                     expanded = false,
@@ -627,32 +690,6 @@ private fun UninstallUi(
                             colors = FilterChipDefaults.filterChipColors(),
                         )
                     }
-                }
-            }
-
-            if (!uiState.isSelectionMode) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 4.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text(
-                        text = stringResource(R.string.uninstall_app_count, uiState.filteredApps.size),
-                        style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                    // Short sort summary so user knows current state without opening sheet.
-                    Text(
-                        text = stringResource(
-                            R.string.uninstall_current_sort_summary,
-                            stringResource(sortLabelRes(uiState.sortBy)),
-                            if (uiState.sortDirection == SortDirection.Asc) "↑" else "↓",
-                        ),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
                 }
             }
 
@@ -778,10 +815,12 @@ private fun FilterSheet(
     sortBy: UninstallSortBy,
     direction: SortDirection,
     groupBy: GroupBy,
+    appFilter: Set<AppFilter>,
     usageGranted: Boolean,
     onSortChange: (UninstallSortBy) -> Unit,
     onGroupByChange: (GroupBy) -> Unit,
     onRequestUsageAccess: () -> Unit,
+    onResetFilters: () -> Unit,
     onDismiss: () -> Unit,
 ) {
     val context = LocalContext.current
@@ -790,6 +829,13 @@ private fun FilterSheet(
     val sheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true,
     )
+    // Disable Reset when nothing differs from defaults — keeps the affordance honest and
+    // matches what a tap would actually change. Defaults mirror `ManageUiState`'s initial
+    // values so this stays in sync if those move.
+    val isDefaultState = sortBy == UninstallSortBy.Name &&
+        direction == SortDirection.Asc &&
+        groupBy == GroupBy.None &&
+        appFilter == setOf(AppFilter.User)
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
@@ -801,11 +847,23 @@ private fun FilterSheet(
                 .padding(horizontal = 20.dp)
                 .padding(bottom = 24.dp),
         ) {
-            Text(
-                text = stringResource(R.string.uninstall_filter_sheet_title),
-                style = MaterialTheme.typography.titleLarge,
-                color = MaterialTheme.colorScheme.onSurface,
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = stringResource(R.string.uninstall_filter_sheet_title),
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.weight(1f),
+                )
+                TextButton(
+                    onClick = onResetFilters,
+                    enabled = !isDefaultState,
+                ) {
+                    Text(stringResource(R.string.uninstall_filter_reset))
+                }
+            }
             Spacer(Modifier.height(16.dp))
 
             Text(
@@ -1763,11 +1821,16 @@ private fun androidx.compose.foundation.layout.RowScope.StorageChip(
 }
 
 /**
- * Compact 3-stat summary for the active filter set: count · total size · disabled count.
- * Reads `apps` directly so the banner updates instantly when chips toggle.
+ * Compact summary for the active filter set: count · total size · disabled count, plus the
+ * current sort indicator pinned to the trailing edge. Reads `apps` directly so the banner
+ * updates instantly when chips toggle.
  */
 @Composable
-private fun StatsBanner(apps: List<InstalledApp>) {
+private fun StatsBanner(
+    apps: List<InstalledApp>,
+    sortBy: UninstallSortBy,
+    direction: SortDirection,
+) {
     val context = LocalContext.current
     val totalBytes = remember(apps) { apps.sumOf { it.sizeBytes } }
     val disabled = remember(apps) { apps.count { !it.enabled } }
@@ -1775,7 +1838,8 @@ private fun StatsBanner(apps: List<InstalledApp>) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 4.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Text(
             text = stringResource(R.string.manage_stats_apps, apps.size),
@@ -1796,6 +1860,16 @@ private fun StatsBanner(apps: List<InstalledApp>) {
                 color = MaterialTheme.colorScheme.error,
             )
         }
+        Spacer(Modifier.weight(1f))
+        Text(
+            text = stringResource(
+                R.string.uninstall_current_sort_summary,
+                stringResource(sortLabelRes(sortBy)),
+                if (direction == SortDirection.Asc) "↑" else "↓",
+            ),
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
     }
 }
 
