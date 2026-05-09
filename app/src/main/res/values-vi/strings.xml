@@ -545,4 +545,5 @@
     <string name="diagnostics_clear_confirm_body">Tất cả nhật ký lỗi đã lưu sẽ bị xóa vĩnh viễn.</string>
     <string name="diagnostics_clear">Xóa</string>
     <string name="diagnostics_cancel">Hủy</string>
+    <string name="installer_dialog_label">Trình cài đặt gói</string>
 </resources>

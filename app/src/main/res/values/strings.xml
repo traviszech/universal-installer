@@ -571,4 +571,5 @@
     <string name="dialog_risk_footer">Only proceed if you trust the source of this file.</string>
     <string name="dialog_menu_remember_for_app">Remember for this app</string>
     <string name="dialog_menu_remember_for_app_sub">Use this installer source whenever this app is installed.</string>
+    <string name="installer_dialog_label">Package Installer</string>
 </resources>
