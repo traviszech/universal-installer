@@ -234,6 +234,10 @@
     <string name="permission_notifications_desc">Hiển thị tiến trình tải xuống, sao chép OBB và quét VirusTotal để bạn có thể rời khỏi ứng dụng trong các tác vụ dài.</string>
     <string name="permission_usage_title">Truy cập dữ liệu sử dụng</string>
     <string name="permission_usage_desc">Tùy chọn — cho phép màn hình Gỡ cài đặt sắp xếp ứng dụng theo lần sử dụng cuối và hiển thị thời gian sử dụng từng ứng dụng.</string>
+    <string name="permission_return_channel_name">Quay lại ứng dụng</string>
+    <string name="permission_return_channel_desc">Thông báo để quay lại ứng dụng sau khi cấp quyền trong cài đặt hệ thống.</string>
+    <string name="permission_return_title">Đã cấp quyền</string>
+    <string name="permission_return_body">Nhấn để quay lại Universal Installer.</string>
     <string name="remote_download_clipboard_empty">Bộ nhớ tạm trống</string>
     <string name="remote_download_invalid_url">URL không hợp lệ. Phải bắt đầu bằng http:// hoặc https://</string>
     <string name="remote_download_cancel">Hủy</string>

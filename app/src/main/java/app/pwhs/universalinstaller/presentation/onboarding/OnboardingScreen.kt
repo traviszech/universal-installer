@@ -86,6 +86,7 @@ fun OnboardingScreen(
         ),
     )
     val context = LocalContext.current
+    val activity = context as? android.app.Activity
     val scope = rememberCoroutineScope()
     val pagerState = rememberPagerState(pageCount = { pages.size })
 
@@ -149,8 +150,10 @@ fun OnboardingScreen(
                                 Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
                                 Uri.parse("package:${context.packageName}")
                             )
-                            PermissionMonitor.start(context) {
-                                context.packageManager.canRequestPackageInstalls()
+                            if (activity != null) {
+                                PermissionMonitor.start(activity) {
+                                    context.packageManager.canRequestPackageInstalls()
+                                }
                             }
                             context.startActivity(intent)
                         }

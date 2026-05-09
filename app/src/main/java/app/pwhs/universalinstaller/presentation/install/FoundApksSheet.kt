@@ -91,6 +91,7 @@ internal fun FoundApksSheet(
 ) {
     if (scanState is ScanState.Idle) return
     val context = LocalContext.current
+    val activity = context as? android.app.Activity
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     LifecycleResumeEffect(Unit) {
@@ -111,8 +112,10 @@ internal fun FoundApksSheet(
             when (scanState) {
                 is ScanState.PermissionNeeded -> PermissionBody(
                     onGrant = {
-                        PermissionMonitor.start(context) {
-                            ApkScanner.hasAllFilesAccess(context)
+                        if (activity != null) {
+                            PermissionMonitor.start(activity) {
+                                ApkScanner.hasAllFilesAccess(context)
+                            }
                         }
                         onGrantPermission()
                     }

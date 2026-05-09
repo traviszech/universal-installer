@@ -9,8 +9,11 @@ import android.os.Build
 import android.os.Environment
 import android.os.Process
 import android.provider.Settings
+import android.app.Activity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.app.ActivityCompat
+import androidx.core.app.NotificationManagerCompat
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -82,6 +85,7 @@ internal fun PermissionCenterSheet(
 ) {
     if (!visible) return
     val context = LocalContext.current
+    val activity = context as? Activity
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     // Refresh state whenever the sheet returns to the foreground — the user may have toggled
@@ -93,13 +97,28 @@ internal fun PermissionCenterSheet(
         onPauseOrDispose {}
     }
 
-    val notificationLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { tick += 1 }
-
     val settingsLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { tick += 1 }
+
+    val notificationLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        tick += 1
+        // If denied via runtime dialog AND the system says we shouldn't show rationale anymore,
+        // it means user permanently denied (or hit "Don't ask again"). Fall back to settings.
+        if (!granted && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            val canStillAsk = activity?.let {
+                ActivityCompat.shouldShowRequestPermissionRationale(
+                    it, Manifest.permission.POST_NOTIFICATIONS,
+                )
+            } ?: false
+            if (!canStillAsk && activity != null) {
+                PermissionMonitor.start(activity) { isNotificationsGranted(context) }
+                settingsLauncher.launch(notificationSettingsIntent(context))
+            }
+        }
+    }
 
     // Strings resolve in composable scope; granted flags re-read every `tick` bump (resume,
     // grant callback) without rebuilding the whole composable tree.
@@ -199,22 +218,42 @@ internal fun PermissionCenterSheet(
                             when (item.kind) {
                                 PermKind.Notifications -> {
                                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                                        notificationLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                                        val deniedOnce = activity?.let {
+                                            ActivityCompat.shouldShowRequestPermissionRationale(
+                                                it, Manifest.permission.POST_NOTIFICATIONS,
+                                            )
+                                        } ?: false
+                                        val runtimeDenied = ContextCompat.checkSelfPermission(
+                                            context, Manifest.permission.POST_NOTIFICATIONS,
+                                        ) != PackageManager.PERMISSION_GRANTED
+                                        // Permanently denied: rationale=false AND not granted AND we already asked
+                                        // before. Skip the silent runtime dialog and go straight to settings.
+                                        if (runtimeDenied && !deniedOnce && hasAskedBeforeNotifPref(context) && activity != null) {
+                                            PermissionMonitor.start(activity) { isNotificationsGranted(context) }
+                                            settingsLauncher.launch(notificationSettingsIntent(context))
+                                        } else {
+                                            markAskedNotifPref(context)
+                                            notificationLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                                        }
                                     } else {
-                                        val intent = appDetailsIntent(context)
-                                        PermissionMonitor.start(context) { isNotificationsGranted(context) }
+                                        val intent = notificationSettingsIntent(context)
+                                        if (activity != null) {
+                                            PermissionMonitor.start(activity) { isNotificationsGranted(context) }
+                                        }
                                         settingsLauncher.launch(intent)
                                     }
                                 }
                                 else -> {
                                     val intent = grantIntent(context, item.kind)
                                     if (intent != null) {
-                                        PermissionMonitor.start(context) {
-                                            when (item.kind) {
-                                                PermKind.Install -> isInstallGranted(context)
-                                                PermKind.Storage -> isAllFilesAccessGranted(context)
-                                                PermKind.Usage -> isUsageAccessGranted(context)
-                                                else -> true
+                                        if (activity != null) {
+                                            PermissionMonitor.start(activity) {
+                                                when (item.kind) {
+                                                    PermKind.Install -> isInstallGranted(context)
+                                                    PermKind.Storage -> isAllFilesAccessGranted(context)
+                                                    PermKind.Usage -> isUsageAccessGranted(context)
+                                                    else -> true
+                                                }
                                             }
                                         }
                                         settingsLauncher.launch(intent)
@@ -350,11 +389,34 @@ private fun isAllFilesAccessGranted(context: Context): Boolean {
 }
 
 private fun isNotificationsGranted(context: Context): Boolean {
-    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-        ContextCompat.checkSelfPermission(
-            context, Manifest.permission.POST_NOTIFICATIONS,
-        ) == PackageManager.PERMISSION_GRANTED
-    } else true
+    // areNotificationsEnabled() reflects the channel-level switch — what the user toggles in
+    // App notifications settings. Works on every API level and stays consistent whether the
+    // grant came via runtime dialog (13+) or the settings toggle.
+    return NotificationManagerCompat.from(context).areNotificationsEnabled()
+}
+
+private fun notificationSettingsIntent(context: Context): Intent {
+    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
+            putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+        }
+    } else {
+        appDetailsIntent(context)
+    }
+}
+
+private const val PREF_NOTIF = "permission_center_prefs"
+private const val KEY_ASKED_NOTIF = "asked_post_notifications"
+
+private fun hasAskedBeforeNotifPref(context: Context): Boolean =
+    context.getSharedPreferences(PREF_NOTIF, Context.MODE_PRIVATE)
+        .getBoolean(KEY_ASKED_NOTIF, false)
+
+private fun markAskedNotifPref(context: Context) {
+    context.getSharedPreferences(PREF_NOTIF, Context.MODE_PRIVATE)
+        .edit()
+        .putBoolean(KEY_ASKED_NOTIF, true)
+        .apply()
 }
 
 private fun isUsageAccessGranted(context: Context): Boolean {
