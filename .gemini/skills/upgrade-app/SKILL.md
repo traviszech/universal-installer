@@ -35,32 +35,19 @@ This skill automates the end-to-end process of releasing a new version of the ap
 - Run `./gradlew assembleDebug` to verify the build.
 - If it fails, stop and report errors.
 
-### 6. Git Operations
-- Stage the changes:
+### 6. Git & GitHub Operations (MUST BE SEQUENTIAL)
+- To avoid race conditions and tagging the wrong commit, execute the commit and tagging sequentially in a single command block:
   ```bash
-  git add app/build.gradle.kts fastlane/metadata/android/en-US/changelogs/<new-versionCode>.txt
-  ```
-- Commit:
-  ```bash
-  git commit -m "chore: bump version to <versionName> (<versionCode>)"
-  ```
-- Push:
-  ```bash
-  git push origin main
-  ```
-
-### 7. GitHub Release
-- Create and push the tag:
-  ```bash
-  git tag v<versionName>
-  git push origin v<versionName>
-  ```
-- Create the GitHub release:
-  ```bash
+  git add app/build.gradle.kts fastlane/metadata/android/en-US/changelogs/<new-versionCode>.txt && \
+  git commit -m "chore: bump version to <versionName> (<versionCode>)" && \
+  git tag v<versionName> && \
+  git push origin main && \
+  git push origin v<versionName> && \
   gh release create v<versionName> --title "v<versionName>" --notes-file fastlane/metadata/android/en-US/changelogs/<new-versionCode>.txt
   ```
 
 ## Guardrails
-- Never push or release without a successful `./gradlew assembleDebug`.
-- Always wait for user confirmation on the changelog.
-- Ensure the tag matches the `vX.Y.Z` format.
+- **Race Condition Prevention:** Never separate `git commit` and `git tag` into different tool calls in the same turn without `wait_for_previous: true`.
+- **Validation:** Always verify the build with `./gradlew assembleDebug` before pushing.
+- **Confirmation:** Always wait for user confirmation on the changelog.
+- **Format:** Ensure the tag matches the `vX.Y.Z` format.
