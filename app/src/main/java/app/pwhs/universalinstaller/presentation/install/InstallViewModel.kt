@@ -27,6 +27,7 @@ import app.pwhs.universalinstaller.presentation.install.controller.BaseInstallCo
 import app.pwhs.universalinstaller.presentation.install.controller.DefaultInstallController
 import app.pwhs.universalinstaller.presentation.install.controller.InstallerBackendFactory
 import app.pwhs.universalinstaller.presentation.install.controller.ShizukuInstallController
+import app.pwhs.universalinstaller.presentation.install.controller.RootState
 import androidx.datastore.preferences.core.edit
 import androidx.work.ExistingWorkPolicy
 import androidx.work.WorkInfo
@@ -1222,22 +1223,32 @@ class InstallViewModel(
         // exclusion, but handle the race cleanly by preferring the stronger backend).
         val prefs = try { application.dataStore.data.first() } catch (_: Exception) { null }
         val useRoot = prefs?.get(PreferencesKeys.USE_ROOT) ?: false
-        if (useRoot && rootController != null) {
-            // Verify root is still granted — user may have revoked in Magisk/KernelSU
-            // between toggling the pref and actually installing. Without this check the
-            // install crashes deep in libsu instead of falling back to the stock installer.
+        val spoofRoot = prefs?.get(PreferencesKeys.ROOT_SET_INSTALL_SOURCE) ?: false
+
+        if ((useRoot || spoofRoot) && rootController != null) {
+            // Verify root is still granted. If it's UNKNOWN (no shell yet) or was 
+            // previously DENIED, try an active request. This ensures the install 
+            // actually uses the root controller if possible.
             val state = backendFactory.probeRootState()
-            if (state == app.pwhs.universalinstaller.presentation.install.controller.RootState.READY) {
+            val finalState = if (state == RootState.READY) state 
+                else if (state == RootState.UNKNOWN || state == RootState.DENIED) backendFactory.requestRoot()
+                else state
+
+            if (finalState == RootState.READY) {
                 return rootController
             }
-            Timber.w("USE_ROOT set but root probe=$state — falling back to next backend")
+            Timber.w("Root prioritized (useRoot=$useRoot, spoof=$spoofRoot) but root probe=$state, request=$finalState — falling back")
         }
+
         val useShizuku = prefs?.get(PreferencesKeys.USE_SHIZUKU) ?: false
-        if (useShizuku && isShizukuReadyForInstall()) {
+        val spoofShizuku = prefs?.get(PreferencesKeys.SHIZUKU_SET_INSTALL_SOURCE) ?: false
+
+        if ((useShizuku || spoofShizuku) && isShizukuReadyForInstall()) {
             return shizukuController
         }
-        if (useShizuku) {
-            Timber.w("USE_SHIZUKU set but Shizuku binder/permission not ready — falling back to default installer")
+
+        if (useShizuku || spoofShizuku) {
+            Timber.w("Shizuku prioritized but not ready — falling back to default installer")
         }
         return defaultController
     }

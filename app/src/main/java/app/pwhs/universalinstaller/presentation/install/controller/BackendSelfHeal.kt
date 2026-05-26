@@ -45,8 +45,8 @@ object BackendSelfHeal {
                 Timber.w(t, "BackendSelfHeal: root probe threw")
                 RootState.UNAVAILABLE
             }
-            if (state != RootState.READY) {
-                Timber.i("BackendSelfHeal: USE_ROOT on but root probe=$state — disabling pref")
+            if (state == RootState.UNAVAILABLE || state == RootState.NOT_ROOTED) {
+                Timber.i("BackendSelfHeal: USE_ROOT on but root definitively unavailable ($state) — disabling pref")
                 runCatching {
                     application.dataStore.edit { it[PreferencesKeys.USE_ROOT] = false }
                 }

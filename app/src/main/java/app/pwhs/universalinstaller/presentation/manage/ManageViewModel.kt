@@ -770,8 +770,18 @@ class ManageViewModel(
     private suspend fun resolvePrivilegedExecutor(): PrivilegedExecutor? {
         if (backendFactory.rootSupportCompiledIn) {
             val usingRoot = readPref(PreferencesKeys.USE_ROOT)
-            if (usingRoot && backendFactory.probeRootState() == RootState.READY) {
-                return PrivilegedExecutor.Root
+            if (usingRoot) {
+                val state = backendFactory.probeRootState()
+                if (state == RootState.READY) return PrivilegedExecutor.Root
+                
+                // If it's UNKNOWN (no shell yet) or was previously DENIED, try an active 
+                // request. This may trigger a SuperUser prompt but ensures the action 
+                // succeeds if root is actually available.
+                if (state == RootState.UNKNOWN || state == RootState.DENIED) {
+                    if (backendFactory.requestRoot() == RootState.READY) {
+                        return PrivilegedExecutor.Root
+                    }
+                }
             }
         }
         val usingShizuku = readPref(PreferencesKeys.USE_SHIZUKU)

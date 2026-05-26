@@ -336,7 +336,18 @@ class SettingViewModel(
                 .BiometricGate.canAuthenticate(application),
             dialogInstallMode = dialogMode,
         )
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), SettingUiState())
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = SettingUiState(
+            rootSupported = backendFactory.rootSupportCompiledIn,
+            rootState = if (backendFactory.rootSupportCompiledIn) RootState.UNKNOWN else RootState.UNAVAILABLE,
+            // Optimistically assume Shizuku is available to avoid the "grey blink" 
+            // on launch for users who have it set up.
+            shizukuAvailable = true,
+            biometricEnrolmentAvailable = app.pwhs.universalinstaller.util.BiometricGate.canAuthenticate(application),
+        ),
+    )
 
     fun setThemeMode(mode: ThemeMode) {
         viewModelScope.launch {
