@@ -10,10 +10,12 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
 import androidx.compose.material.icons.rounded.Badge
@@ -22,6 +24,7 @@ import androidx.compose.material.icons.rounded.Fingerprint
 import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material.icons.rounded.Key
 import androidx.compose.material.icons.rounded.Language
+import androidx.compose.material.icons.rounded.Lock
 import androidx.compose.material.icons.rounded.Palette
 import androidx.compose.material.icons.rounded.RocketLaunch
 import androidx.compose.material.icons.rounded.SettingsApplications
@@ -41,12 +44,16 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import app.pwhs.universalinstaller.R
 import app.pwhs.universalinstaller.presentation.composable.SettingsSection
@@ -249,12 +256,18 @@ private fun SettingUi(
                 }
             }
 
-            // ── APK Extractor Section ────────────────────
-            // Moved to Backups screen
-
-            // ── Advanced Options ─────────────────────────
+            // ── Interface Section ────────────────────────
             item {
-                SettingsSection(title = "Advanced", icon = Icons.Rounded.Terminal) {
+                SettingsSection(title = "Interface", icon = Icons.Rounded.Palette) {
+                    ListItem(
+                        headlineContent = { Text(stringResource(R.string.theme_screen_title)) },
+                        leadingContent = { Icon(Icons.Rounded.Palette, null) },
+                        modifier = Modifier.clickable {
+                            context.startActivity(android.content.Intent(context, app.pwhs.universalinstaller.presentation.setting.theme.ThemeActivity::class.java))
+                        },
+                        colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+                    )
+                    HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), thickness = 0.5.dp)
                     ListItem(
                         headlineContent = {
                             Text(stringResource(R.string.setting_language_title), style = MaterialTheme.typography.bodyLarge)
@@ -276,32 +289,6 @@ private fun SettingUi(
                         },
                         modifier = Modifier.clickable(onClick = onLanguageClick),
                         colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                    )
-
-                    HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), thickness = 0.5.dp)
-
-                    OutlinedTextField(
-                        value = uiState.virusTotalApiKey,
-                        onValueChange = onVirusTotalKeyChanged,
-                        label = { Text("VirusTotal API Key") },
-                        modifier = Modifier.fillMaxWidth().padding(16.dp),
-                        leadingIcon = { Icon(Icons.Rounded.Key, null) },
-                        placeholder = { Text("Paste API key here...") },
-                        singleLine = true,
-                    )
-                }
-            }
-
-            // ── Interface Section ────────────────────────
-            item {
-                SettingsSection(title = "Interface", icon = Icons.Rounded.Palette) {
-                    ListItem(
-                        headlineContent = { Text(stringResource(R.string.theme_screen_title)) },
-                        leadingContent = { Icon(Icons.Rounded.Palette, null) },
-                        modifier = Modifier.clickable {
-                            context.startActivity(android.content.Intent(context, app.pwhs.universalinstaller.presentation.setting.theme.ThemeActivity::class.java))
-                        },
-                        colors = ListItemDefaults.colors(containerColor = Color.Transparent)
                     )
                 }
             }
@@ -344,6 +331,47 @@ private fun SettingUi(
                             context.startActivity(android.content.Intent(context, app.pwhs.universalinstaller.presentation.sync.SyncActivity::class.java))
                         },
                         colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+                    )
+                    HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), thickness = 0.5.dp)
+                    Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                        OutlinedTextField(
+                            value = uiState.syncOptions.serverPort,
+                            onValueChange = onSyncServerPortChanged,
+                            label = { Text("Port") },
+                            modifier = Modifier.fillMaxWidth(),
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Next),
+                            singleLine = true
+                        )
+                        SwitchPreference(
+                            title = "Require PIN",
+                            checked = uiState.syncOptions.requirePin,
+                            onCheckedChange = onSyncRequirePinChanged
+                        )
+                        if (uiState.syncOptions.requirePin) {
+                            OutlinedTextField(
+                                value = uiState.syncOptions.pinCode,
+                                onValueChange = onSyncPinCodeChanged,
+                                label = { Text("PIN Code") },
+                                modifier = Modifier.fillMaxWidth(),
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
+                                singleLine = true
+                            )
+                        }
+                    }
+                }
+            }
+
+            // ── Advanced Options ─────────────────────────
+            item {
+                SettingsSection(title = "Advanced", icon = Icons.Rounded.Terminal) {
+                    OutlinedTextField(
+                        value = uiState.virusTotalApiKey,
+                        onValueChange = onVirusTotalKeyChanged,
+                        label = { Text("VirusTotal API Key") },
+                        modifier = Modifier.fillMaxWidth().padding(16.dp),
+                        leadingIcon = { Icon(Icons.Rounded.Key, null) },
+                        placeholder = { Text("Paste API key here...") },
+                        singleLine = true,
                     )
                 }
             }
