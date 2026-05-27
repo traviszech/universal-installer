@@ -15,20 +15,28 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.rounded.Badge
 import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material.icons.rounded.DriveFileRenameOutline
+import androidx.compose.material.icons.rounded.Layers
+import androidx.compose.material.icons.rounded.List
+import androidx.compose.material.icons.rounded.SettingsApplications
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeTopAppBar
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -40,12 +48,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import app.pwhs.universalinstaller.R
 import app.pwhs.universalinstaller.domain.model.InstallerProfile
+import app.pwhs.universalinstaller.presentation.composable.SettingsSection
 import app.pwhs.universalinstaller.presentation.setting.SettingViewModel
 import org.koin.androidx.compose.koinViewModel
 import java.util.UUID
@@ -110,19 +122,21 @@ fun ProfileEditScreen(
         onAllUsersChange = { allUsers = it },
         onBack = { (context as? android.app.Activity)?.finish() },
         onSave = {
-            val profile = (originalProfile ?: InstallerProfile(id = UUID.randomUUID().toString(), name = "")).copy(
-                name = name,
-                installerPackageName = installerPkg.ifBlank { null },
-                preferredBackend = if (backend == "Default") null else backend,
-                replaceExisting = replaceExisting,
-                allowTest = allowTest,
-                requestDowngrade = requestDowngrade,
-                grantAllPermissions = grantAllPermissions,
-                bypassLowTargetSdk = bypassLowTargetSdk,
-                allUsers = allUsers,
-            )
-            viewModel.saveProfile(profile)
-            (context as? android.app.Activity)?.finish()
+            if (name.isNotBlank()) {
+                val profile = (originalProfile ?: InstallerProfile(id = UUID.randomUUID().toString(), name = "")).copy(
+                    name = name,
+                    installerPackageName = installerPkg.ifBlank { null },
+                    preferredBackend = if (backend == "Default") null else backend,
+                    replaceExisting = replaceExisting,
+                    allowTest = allowTest,
+                    requestDowngrade = requestDowngrade,
+                    grantAllPermissions = grantAllPermissions,
+                    bypassLowTargetSdk = bypassLowTargetSdk,
+                    allUsers = allUsers,
+                )
+                viewModel.saveProfile(profile)
+                (context as? android.app.Activity)?.finish()
+            }
         }
     )
 }
@@ -175,123 +189,137 @@ private fun ProfileEditUi(
                         )
                     }
                 },
+                actions = {
+                    IconButton(onClick = onSave, enabled = name.isNotBlank()) {
+                        Icon(
+                            imageVector = Icons.Rounded.Check,
+                            contentDescription = stringResource(R.string.profile_save),
+                            tint = if (name.isNotBlank()) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f)
+                        )
+                    }
+                },
                 scrollBehavior = scrollBehavior,
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.background,
                     scrolledContainerColor = MaterialTheme.colorScheme.surfaceContainer,
                 ),
             )
-        },
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = onSave,
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary,
-                modifier = Modifier.padding(bottom = navBarPadding)
-            ) {
-                Icon(Icons.Rounded.Check, contentDescription = stringResource(R.string.profile_save))
-            }
         }
     ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .padding(innerPadding)
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 24.dp)
-                .padding(top = 16.dp, bottom = navBarPadding + 88.dp),
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(
+                start = 16.dp,
+                end = 16.dp,
+                top = innerPadding.calculateTopPadding() + 8.dp,
+                bottom = navBarPadding + 32.dp
+            ),
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
-            OutlinedTextField(
-                value = name,
-                onValueChange = onNameChange,
-                label = { Text(stringResource(R.string.profile_name_label)) },
-                placeholder = { Text(stringResource(R.string.profile_name_placeholder)) },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true
-            )
+            item {
+                SettingsSection(
+                    title = "General",
+                    icon = Icons.Rounded.Badge
+                ) {
+                    Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                        OutlinedTextField(
+                            value = name,
+                            onValueChange = onNameChange,
+                            label = { Text(stringResource(R.string.profile_name_label)) },
+                            placeholder = { Text(stringResource(R.string.profile_name_placeholder)) },
+                            modifier = Modifier.fillMaxWidth(),
+                            singleLine = true,
+                            shape = MaterialTheme.shapes.medium
+                        )
 
-            OutlinedTextField(
-                value = installerPkg,
-                onValueChange = onInstallerPkgChange,
-                label = { Text(stringResource(R.string.setting_shizuku_installer_label)) },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true
-            )
-
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(
-                    stringResource(R.string.setting_shizuku_backend),
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.primary
-                )
-                listOf("Default", "Shizuku", "Root").forEach { b ->
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { onBackendChange(b) }
-                            .padding(vertical = 4.dp)
-                    ) {
-                        RadioButton(selected = backend == b, onClick = { onBackendChange(b) })
-                        Text(b, modifier = Modifier.padding(start = 12.dp))
+                        OutlinedTextField(
+                            value = installerPkg,
+                            onValueChange = onInstallerPkgChange,
+                            label = { Text(stringResource(R.string.setting_shizuku_installer_label)) },
+                            placeholder = { Text("com.android.vending") },
+                            modifier = Modifier.fillMaxWidth(),
+                            singleLine = true,
+                            shape = MaterialTheme.shapes.medium,
+                            leadingIcon = { Icon(Icons.Rounded.DriveFileRenameOutline, null) },
+                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
+                        )
                     }
                 }
             }
 
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(
-                    stringResource(R.string.dialog_menu_title),
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.primary
-                )
-                
-                ProfileFlagRow(stringResource(R.string.setting_shizuku_replace), replaceExisting, onReplaceExistingChange)
-                ProfileFlagRow(stringResource(R.string.setting_shizuku_allow_test), allowTest, onAllowTestChange)
-                ProfileFlagRow(stringResource(R.string.setting_shizuku_downgrade), requestDowngrade, onRequestDowngradeChange)
-                ProfileFlagRow(stringResource(R.string.setting_shizuku_grant_permissions), grantAllPermissions, onGrantAllPermissionsChange)
-                ProfileFlagRow(stringResource(R.string.setting_shizuku_bypass_sdk), bypassLowTargetSdk, onBypassLowTargetSdkChange)
-                ProfileFlagRow(stringResource(R.string.setting_shizuku_all_users), allUsers, onAllUsersChange)
+            item {
+                SettingsSection(
+                    title = stringResource(R.string.setting_shizuku_backend),
+                    icon = Icons.Rounded.Layers
+                ) {
+                    Column(modifier = Modifier.padding(vertical = 4.dp)) {
+                        listOf("Default", "Shizuku", "Root").forEach { b ->
+                            ListItem(
+                                headlineContent = { Text(b) },
+                                leadingContent = {
+                                    RadioButton(selected = backend == b, onClick = { onBackendChange(b) })
+                                },
+                                modifier = Modifier.clickable { onBackendChange(b) },
+                                colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+                            )
+                        }
+                    }
+                }
+            }
+
+            item {
+                SettingsSection(
+                    title = stringResource(R.string.dialog_menu_title),
+                    icon = Icons.Rounded.List
+                ) {
+                    Column(modifier = Modifier.padding(vertical = 4.dp)) {
+                        ProfileFlagItem(stringResource(R.string.setting_shizuku_replace), replaceExisting, onReplaceExistingChange)
+                        ProfileFlagItem(stringResource(R.string.setting_shizuku_allow_test), allowTest, onAllowTestChange)
+                        ProfileFlagItem(stringResource(R.string.setting_shizuku_downgrade), requestDowngrade, onRequestDowngradeChange)
+                        ProfileFlagItem(stringResource(R.string.setting_shizuku_grant_permissions), grantAllPermissions, onGrantAllPermissionsChange)
+                        ProfileFlagItem(stringResource(R.string.setting_shizuku_bypass_sdk), bypassLowTargetSdk, onBypassLowTargetSdkChange)
+                        ProfileFlagItem(stringResource(R.string.setting_shizuku_all_users), allUsers, onAllUsersChange)
+                    }
+                }
             }
         }
     }
 }
 
 @Composable
-private fun ProfileFlagRow(
+private fun ProfileFlagItem(
     label: String,
     checked: Boolean?,
     onCheckedChange: (Boolean?) -> Unit
 ) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable {
-                onCheckedChange(
-                    when (checked) {
-                        true -> false
-                        false -> null
-                        null -> true
-                    }
-                )
+    ListItem(
+        headlineContent = {
+            Text(
+                text = label,
+                style = MaterialTheme.typography.bodyLarge,
+                color = if (checked == null) MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f) else MaterialTheme.colorScheme.onSurface
+            )
+        },
+        leadingContent = {
+            val state = when (checked) {
+                true -> androidx.compose.ui.state.ToggleableState.On
+                false -> androidx.compose.ui.state.ToggleableState.Off
+                null -> androidx.compose.ui.state.ToggleableState.Indeterminate
             }
-            .padding(vertical = 8.dp)
-    ) {
-        val state = when (checked) {
-            true -> androidx.compose.ui.state.ToggleableState.On
-            false -> androidx.compose.ui.state.ToggleableState.Off
-            null -> androidx.compose.ui.state.ToggleableState.Indeterminate
-        }
-        androidx.compose.material3.TriStateCheckbox(
-            state = state,
-            onClick = null
-        )
-        Text(
-            text = label,
-            modifier = Modifier.padding(start = 12.dp),
-            style = MaterialTheme.typography.bodyLarge,
-            color = if (checked == null) MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f) else MaterialTheme.colorScheme.onSurface
-        )
-    }
+            androidx.compose.material3.TriStateCheckbox(
+                state = state,
+                onClick = null
+            )
+        },
+        modifier = Modifier.clickable {
+            onCheckedChange(
+                when (checked) {
+                    true -> false
+                    false -> null
+                    null -> true
+                }
+            )
+        },
+        colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+    )
 }
