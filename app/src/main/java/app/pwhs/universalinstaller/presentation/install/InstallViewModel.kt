@@ -334,6 +334,29 @@ class InstallViewModel(
             )
             _isLoading.value = false
             launchHashLookupOnly(context, uri)
+
+            // Smart Pick: apply profile if mapping exists for this package
+            val currentProfiles = uiState.value.installerProfiles
+            val mapping = uiState.value.appProfileMapping
+            mapping[info.packageName]?.let { profileId ->
+                currentProfiles.find { it.id == profileId }?.let { profile ->
+                    applyProfile(profile)
+                }
+            }
+        }
+    }
+
+    fun setAppProfileMapping(packageName: String, profileId: String?) {
+        viewModelScope.launch {
+            application.dataStore.edit { prefs ->
+                val current = ProfileManager.parseMapping(prefs[PreferencesKeys.APP_PROFILE_MAPPING]).toMutableMap()
+                if (profileId != null) {
+                    current[packageName] = profileId
+                } else {
+                    current.remove(packageName)
+                }
+                prefs[PreferencesKeys.APP_PROFILE_MAPPING] = ProfileManager.serializeMapping(current)
+            }
         }
     }
 

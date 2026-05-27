@@ -170,6 +170,10 @@
             android:exported="false"
             android:theme="@style/Theme.UniversalInstaller" />
         <activity
+            android:name=".presentation.setting.profile.ProfileActivity"
+            android:exported="false"
+            android:theme="@style/Theme.UniversalInstaller" />
+        <activity
             android:name=".presentation.setting.about.AboutActivity"
             android:exported="false"
             android:theme="@style/Theme.UniversalInstaller" />

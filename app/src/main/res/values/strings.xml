@@ -595,4 +595,24 @@
     <string name="uninstall_search_open_cd">Search</string>
     <string name="uninstall_search_close_cd">Close search</string>
     <string name="uninstall_search_clear_cd">Clear search</string>
+
+    <string name="setting_section_profiles">Installer Profiles</string>
+    <string name="setting_profiles_title">Profiles</string>
+    <string name="setting_profiles_subtitle">Save and reuse install configurations</string>
+    <string name="profile_list_title">Installer Profiles</string>
+    <string name="profile_empty_state">No profiles created yet. Use profiles to save specific installer packages, backends, or flag combinations.</string>
+    <string name="profile_add_button">Add Profile</string>
+    <string name="profile_edit_title">Edit Profile</string>
+    <string name="profile_create_title">Create Profile</string>
+    <string name="profile_name_label">Profile Name</string>
+    <string name="profile_name_placeholder">e.g. Play Store Spoof</string>
+    <string name="profile_delete_confirm_title">Delete profile?</string>
+    <string name="profile_delete_confirm_msg">This will also remove any automatic mappings for this profile.</string>
+    <string name="profile_save">Save</string>
+    <string name="profile_delete">Delete</string>
+    <string name="install_profile_picker_label">Installer Profile</string>
+    <string name="install_profile_none">None (Use global settings)</string>
+    <string name="install_profile_smart_pick_enabled">Smart Pick: Applied \&quot;%s\&quot; profile</string>
+    <string name="profile_mapping_header">Auto-apply for this app</string>
+    <string name="profile_mapping_desc">Always use this profile when installing this package.</string>
 </resources>

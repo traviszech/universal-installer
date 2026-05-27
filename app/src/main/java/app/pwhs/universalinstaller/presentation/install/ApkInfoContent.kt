@@ -2,6 +2,12 @@ package app.pwhs.universalinstaller.presentation.install
 
 import android.text.format.Formatter
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -21,30 +27,37 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.OpenInNew
 import androidx.compose.material.icons.rounded.Android
+import androidx.compose.material.icons.rounded.Badge
 import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.CloudUpload
 import androidx.compose.material.icons.rounded.ExpandLess
 import androidx.compose.material.icons.rounded.ExpandMore
 import androidx.compose.material.icons.rounded.InstallMobile
-import androidx.compose.material.icons.rounded.Language
 import androidx.compose.material.icons.rounded.Memory
-import androidx.compose.material.icons.rounded.OpenInNew
 import androidx.compose.material.icons.rounded.PhoneAndroid
 import androidx.compose.material.icons.rounded.Security
 import androidx.compose.material.icons.rounded.Storage
 import androidx.compose.material.icons.rounded.Warning
 import androidx.compose.material3.Button
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -52,18 +65,26 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import app.pwhs.universalinstaller.R
 import androidx.core.graphics.drawable.toBitmap
 import app.pwhs.universalinstaller.domain.model.ApkInfo
+import app.pwhs.universalinstaller.domain.model.InstallerProfile
 import app.pwhs.universalinstaller.domain.model.SplitEntry
 import app.pwhs.universalinstaller.domain.model.SplitType
+import app.pwhs.universalinstaller.domain.model.VtEngineResult
+import app.pwhs.universalinstaller.domain.model.VtResult
 import app.pwhs.universalinstaller.domain.model.VtStatus
 import app.pwhs.universalinstaller.ui.theme.LocalExtendedColors
 
@@ -78,26 +99,29 @@ internal fun ApkInfoContent(
     onAttachObb: () -> Unit = {},
     onRemoveObb: (AttachedObb) -> Unit = {},
     onToggleSplit: (Int) -> Unit = {},
+    profiles: List<InstallerProfile> = emptyList(),
+    appProfileMapping: Map<String, String> = emptyMap(),
+    onProfileSelected: (InstallerProfile?) -> Unit = {},
+    onMappingChanged: (String, String?) -> Unit = { _, _ -> },
 ) {
     val context = LocalContext.current
-    // One-shot entry animation. We key on packageName so opening the sheet for a different
-    // APK replays the animation; same package re-renders (e.g. VT scan finishes) won't.
+    val currentMappingProfileId = appProfileMapping[apkInfo.packageName]
     var animationVisible by remember(apkInfo.packageName) { mutableStateOf(false) }
-    androidx.compose.runtime.LaunchedEffect(apkInfo.packageName) { animationVisible = true }
-    val iconScale by androidx.compose.animation.core.animateFloatAsState(
+    LaunchedEffect(apkInfo.packageName) { animationVisible = true }
+    val iconScale by animateFloatAsState(
         targetValue = if (animationVisible) 1f else 0.6f,
-        animationSpec = androidx.compose.animation.core.spring(
-            dampingRatio = androidx.compose.animation.core.Spring.DampingRatioMediumBouncy,
-            stiffness = androidx.compose.animation.core.Spring.StiffnessMediumLow,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessMediumLow,
         ),
         label = "iconScale",
     )
-    val contentAlpha by androidx.compose.animation.core.animateFloatAsState(
+    val contentAlpha by animateFloatAsState(
         targetValue = if (animationVisible) 1f else 0f,
-        animationSpec = androidx.compose.animation.core.tween(
+        animationSpec = tween(
             durationMillis = 350,
             delayMillis = 80,
-            easing = androidx.compose.animation.core.FastOutSlowInEasing,
+            easing = FastOutSlowInEasing,
         ),
         label = "contentAlpha",
     )
@@ -110,9 +134,6 @@ internal fun ApkInfoContent(
             .padding(bottom = 32.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        // App icon — bouncy scale-up entrance. The clip shape is preserved on the
-        // graphicsLayer transform; using `.scale()` directly would clip the bouncy
-        // overshoot at the sheet boundary on small screens.
         val iconModifier = Modifier
             .size(80.dp)
             .graphicsLayer {
@@ -136,7 +157,6 @@ internal fun ApkInfoContent(
             Spacer(Modifier.height(12.dp))
         }
 
-        // App name
         Text(
             text = apkInfo.appName,
             style = MaterialTheme.typography.titleLarge,
@@ -147,7 +167,6 @@ internal fun ApkInfoContent(
         )
         Spacer(Modifier.height(4.dp))
 
-        // Package name
         Text(
             text = apkInfo.packageName,
             style = MaterialTheme.typography.bodySmall,
@@ -159,13 +178,10 @@ internal fun ApkInfoContent(
 
         Spacer(Modifier.height(16.dp))
 
-        // Downgrade detection — fires when ApkInfoExtractor populated installedVersionCode.
-        // Surfaced both as a red chip here AND as a risk in the consent gate at install time.
         val isDowngrade = apkInfo.installedVersionCode != null &&
                 apkInfo.installedVersionCode > 0 &&
                 apkInfo.versionCode < apkInfo.installedVersionCode
 
-        // Info chips row
         FlowRow(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -239,10 +255,8 @@ internal fun ApkInfoContent(
 
         Spacer(Modifier.height(16.dp))
 
-        // Details card
         DetailsCard(apkInfo)
 
-        // Splits selector (only for bundles with multiple splits)
         if (apkInfo.splitEntries.size > 1) {
             Spacer(Modifier.height(16.dp))
             SplitsCard(
@@ -251,13 +265,11 @@ internal fun ApkInfoContent(
             )
         }
 
-        // Supported ABIs section
         if (apkInfo.supportedAbis.isNotEmpty()) {
             Spacer(Modifier.height(16.dp))
             AbisCard(apkInfo.supportedAbis)
         }
 
-        // VirusTotal Security Scan
         Spacer(Modifier.height(16.dp))
         VirusTotalCard(
             vt = apkInfo.vtResult,
@@ -266,15 +278,25 @@ internal fun ApkInfoContent(
             onCheck = onCheckVirusTotal,
         )
 
-        // Permissions section
         if (apkInfo.permissions.isNotEmpty()) {
             Spacer(Modifier.height(16.dp))
             PermissionsCard(apkInfo.permissions)
         }
 
+        if (profiles.isNotEmpty()) {
+            Spacer(Modifier.height(16.dp))
+            ProfilePickerCard(
+                profiles = profiles,
+                currentMappingProfileId = currentMappingProfileId,
+                onProfileSelected = onProfileSelected,
+                onMappingToggle = { profileId ->
+                    onMappingChanged(apkInfo.packageName, profileId)
+                }
+            )
+        }
+
         Spacer(Modifier.height(24.dp))
 
-        // Action buttons
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -303,12 +325,107 @@ internal fun ApkInfoContent(
     }
 }
 
-// ── Section cards ───────────────────────────────────────
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ProfilePickerCard(
+    profiles: List<InstallerProfile>,
+    currentMappingProfileId: String?,
+    onProfileSelected: (InstallerProfile?) -> Unit,
+    onMappingToggle: (String?) -> Unit,
+) {
+    var expanded by remember { mutableStateOf(false) }
+    val selectedProfile = profiles.find { it.id == currentMappingProfileId }
+
+    SectionCard(
+        icon = Icons.Rounded.Badge,
+        title = stringResource(R.string.setting_profiles_title),
+        summary = selectedProfile?.name ?: stringResource(R.string.install_profile_none),
+        defaultExpanded = false
+    ) {
+        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Text(
+                text = stringResource(R.string.install_profile_picker_label),
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.primary
+            )
+
+            ExposedDropdownMenuBox(
+                expanded = expanded,
+                onExpandedChange = { expanded = !expanded },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                OutlinedTextField(
+                    value = selectedProfile?.name ?: stringResource(R.string.install_profile_none),
+                    onValueChange = {},
+                    readOnly = true,
+                    modifier = Modifier
+                        .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable)
+                        .fillMaxWidth(),
+                    trailingIcon = {
+                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+                    },
+                    colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors()
+                )
+                ExposedDropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false }
+                ) {
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.install_profile_none)) },
+                        onClick = {
+                            onProfileSelected(null)
+                            onMappingToggle(null)
+                            expanded = false
+                        }
+                    )
+                    profiles.forEach { profile ->
+                        DropdownMenuItem(
+                            text = { Text(profile.name) },
+                            onClick = {
+                                onProfileSelected(profile)
+                                onMappingToggle(profile.id)
+                                expanded = false
+                            }
+                        )
+                    }
+                }
+            }
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable {
+                        if (currentMappingProfileId != null) {
+                            onMappingToggle(null)
+                        }
+                    }
+            ) {
+                Checkbox(
+                    checked = currentMappingProfileId != null,
+                    onCheckedChange = { checked ->
+                        if (!checked) onMappingToggle(null)
+                    },
+                    enabled = currentMappingProfileId != null
+                )
+                Column(modifier = Modifier.padding(start = 8.dp)) {
+                    Text(
+                        text = stringResource(R.string.profile_mapping_header),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    Text(
+                        text = stringResource(R.string.profile_mapping_desc),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        }
+    }
+}
 
 @Composable
 private fun DetailsCard(apkInfo: ApkInfo) {
-    // Collapsed by default — packageName + version are already in the hero, so this
-    // card is mostly for the curious (target SDK, full version code).
     val summary = buildList {
         if (apkInfo.targetSdkVersion > 0) add("Target API ${apkInfo.targetSdkVersion}")
         if (apkInfo.minSdkVersion > 0) add("Min API ${apkInfo.minSdkVersion}")
@@ -347,8 +464,6 @@ private fun DetailsCard(apkInfo: ApkInfo) {
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun AbisCard(abis: List<String>) {
-    // Most users don't care about ABI specifics — showing the list inline as the
-    // collapsed summary keeps the info one tap away without burning vertical space.
     SectionCard(
         icon = Icons.Rounded.Memory,
         title = stringResource(R.string.apk_info_section_architectures),
@@ -367,13 +482,13 @@ private fun AbisCard(abis: List<String>) {
 
 @Composable
 private fun VirusTotalCard(
-    vt: app.pwhs.universalinstaller.domain.model.VtResult?,
+    vt: VtResult?,
     fileSizeBytes: Long,
     sha256: String = "",
     onCheck: () -> Unit,
 ) {
     val context = LocalContext.current
-    val uriHandler = androidx.compose.ui.platform.LocalUriHandler.current
+    val uriHandler = LocalUriHandler.current
     val extendedColors = LocalExtendedColors.current
     val warningColor = extendedColors.warning
     val status = vt?.status
@@ -482,7 +597,7 @@ private fun VirusTotalCard(
                 VtStatus.TOO_LARGE -> Text(
                     text = stringResource(
                         R.string.apk_info_vt_too_large,
-                        android.text.format.Formatter.formatShortFileSize(context, fileSizeBytes),
+                        Formatter.formatShortFileSize(context, fileSizeBytes),
                         650,
                     ),
                     style = MaterialTheme.typography.bodySmall,
@@ -501,13 +616,11 @@ private fun VirusTotalCard(
                 else -> {}
             }
 
-            // Detailed breakdown — shown when results are available
             if (hasResult && vt != null) {
                 Spacer(Modifier.height(12.dp))
                 VtBreakdownSection(vt = vt, warningColor = warningColor)
             }
 
-            // Action buttons
             if (!inProgress && status != VtStatus.TOO_LARGE && status != VtStatus.NO_API_KEY) {
                 Spacer(Modifier.height(12.dp))
                 val label = when (status) {
@@ -528,7 +641,6 @@ private fun VirusTotalCard(
                 }
             }
 
-            // "View on VirusTotal" link button
             if (sha256.isNotBlank() && (hasResult || status == VtStatus.NO_API_KEY)) {
                 Spacer(Modifier.height(if (hasResult) 4.dp else 12.dp))
                 TextButton(
@@ -553,13 +665,10 @@ private fun VirusTotalCard(
     }
 }
 
-/**
- * Detailed breakdown of VirusTotal engine results with visual indicator bars.
- */
 @Composable
 private fun VtBreakdownSection(
-    vt: app.pwhs.universalinstaller.domain.model.VtResult,
-    warningColor: androidx.compose.ui.graphics.Color,
+    vt: VtResult,
+    warningColor: Color,
 ) {
     val total = (vt.malicious + vt.suspicious + vt.harmless + vt.undetected).coerceAtLeast(1)
 
@@ -570,17 +679,15 @@ private fun VtBreakdownSection(
     )
     Spacer(Modifier.height(8.dp))
 
-    // Stacked progress bar showing all categories
     val malFraction = vt.malicious.toFloat() / total
     val susFraction = vt.suspicious.toFloat() / total
     val harmFraction = vt.harmless.toFloat() / total
-    // undetected fills the rest
 
     val errorColor = MaterialTheme.colorScheme.error
     val primaryColor = MaterialTheme.colorScheme.primary
     val surfaceVariantColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.25f)
 
-    androidx.compose.foundation.Canvas(
+    Canvas(
         modifier = Modifier
             .fillMaxWidth()
             .height(8.dp)
@@ -590,34 +697,29 @@ private fun VtBreakdownSection(
         val h = size.height
         var x = 0f
 
-        // Malicious (red)
         val malW = w * malFraction
         if (malW > 0f) {
-            drawRect(color = errorColor, topLeft = androidx.compose.ui.geometry.Offset(x, 0f), size = androidx.compose.ui.geometry.Size(malW, h))
+            drawRect(color = errorColor, topLeft = Offset(x, 0f), size = Size(malW, h))
             x += malW
         }
-        // Suspicious (warning/orange)
         val susW = w * susFraction
         if (susW > 0f) {
-            drawRect(color = warningColor, topLeft = androidx.compose.ui.geometry.Offset(x, 0f), size = androidx.compose.ui.geometry.Size(susW, h))
+            drawRect(color = warningColor, topLeft = Offset(x, 0f), size = Size(susW, h))
             x += susW
         }
-        // Harmless (green/primary)
         val harmW = w * harmFraction
         if (harmW > 0f) {
-            drawRect(color = primaryColor, topLeft = androidx.compose.ui.geometry.Offset(x, 0f), size = androidx.compose.ui.geometry.Size(harmW, h))
+            drawRect(color = primaryColor, topLeft = Offset(x, 0f), size = Size(harmW, h))
             x += harmW
         }
-        // Undetected (subtle gray)
         val undetW = w - x
         if (undetW > 0f) {
-            drawRect(color = surfaceVariantColor, topLeft = androidx.compose.ui.geometry.Offset(x, 0f), size = androidx.compose.ui.geometry.Size(undetW, h))
+            drawRect(color = surfaceVariantColor, topLeft = Offset(x, 0f), size = Size(undetW, h))
         }
     }
 
     Spacer(Modifier.height(8.dp))
 
-    // Legend rows
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         if (vt.malicious > 0) {
             VtLegendRow(
@@ -645,7 +747,6 @@ private fun VtBreakdownSection(
         )
     }
 
-    // Per-engine detail list
     if (vt.engineResults.isNotEmpty()) {
         Spacer(Modifier.height(12.dp))
 
@@ -658,7 +759,6 @@ private fun VtBreakdownSection(
 
         var showAll by remember { mutableStateOf(false) }
 
-        // Always show threatening engines
         if (threats.isNotEmpty()) {
             Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 threats.forEach { engine ->
@@ -670,7 +770,6 @@ private fun VtBreakdownSection(
             }
         }
 
-        // Collapsible clean engines
         if (cleanEngines.isNotEmpty()) {
             if (showAll) {
                 Spacer(Modifier.height(4.dp))
@@ -700,8 +799,8 @@ private fun VtBreakdownSection(
 
 @Composable
 private fun VtEngineRow(
-    engine: app.pwhs.universalinstaller.domain.model.VtEngineResult,
-    warningColor: androidx.compose.ui.graphics.Color,
+    engine: VtEngineResult,
+    warningColor: Color,
 ) {
     val dotColor = when (engine.category) {
         "malicious" -> MaterialTheme.colorScheme.error
@@ -746,14 +845,14 @@ private fun VtEngineRow(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.weight(1f),
-                textAlign = androidx.compose.ui.text.style.TextAlign.End,
+                textAlign = TextAlign.End,
             )
         } else {
             Text(
                 text = engine.category.replaceFirstChar { it.uppercase() },
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
-                textAlign = androidx.compose.ui.text.style.TextAlign.End,
+                textAlign = TextAlign.End,
             )
         }
     }
@@ -761,7 +860,7 @@ private fun VtEngineRow(
 
 @Composable
 private fun VtLegendRow(
-    color: androidx.compose.ui.graphics.Color,
+    color: Color,
     label: String,
     count: Int,
 ) {
@@ -793,9 +892,6 @@ private fun VtLegendRow(
 @Composable
 private fun PermissionsCard(permissions: List<String>) {
     val context = LocalContext.current
-    // PackageManager-based danger detection + friendly labels via loadLabel(). Beats the
-    // old hardcoded dangerous-set: catches new runtime perms (POST_NOTIFICATIONS,
-    // RECORD_VIDEO, BLUETOOTH_*, NEARBY_WIFI_DEVICES, …) without having to maintain a list.
     val entries = remember(permissions) { resolvePermissionEntries(context, permissions) }
     val dangerousCount = entries.count { it.isDangerous }
 
@@ -804,8 +900,6 @@ private fun PermissionsCard(permissions: List<String>) {
     val showToggle = entries.size > collapsedCount
     val visible = if (expanded || !showToggle) entries else entries.take(collapsedCount)
 
-    // Summary leads with the security signal — "3 sensitive · 12 normal" tells the user
-    // whether to bother expanding without forcing them to scan a full list.
     val summary = if (dangerousCount > 0) {
         "$dangerousCount sensitive · ${entries.size - dangerousCount} normal"
     } else {
@@ -879,8 +973,6 @@ private fun PermissionsCard(permissions: List<String>) {
     }
 }
 
-// ── Splits card ─────────────────────────────────────────
-
 @Composable
 private fun SplitsCard(
     splits: List<SplitEntry>,
@@ -892,8 +984,6 @@ private fun SplitsCard(
     val showToggle = splits.size > collapsedCount
     val visibleSplits = if (expanded || !showToggle) splits else splits.take(collapsedCount)
 
-    // Splits is interactive (the user toggles), so default-expand. Summary shows the
-    // selection so a glance after collapsing tells you what's about to install.
     val selectedCount = splits.count { it.selected }
     val selectedBytes = splits.filter { it.selected }.sumOf { it.sizeBytes.coerceAtLeast(0) }
     val sizeText = if (selectedBytes > 0) " · ${Formatter.formatShortFileSize(context, selectedBytes)}" else ""
@@ -931,7 +1021,7 @@ private fun SplitsCard(
                         .padding(start = 4.dp, end = 8.dp, top = 2.dp, bottom = 2.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    androidx.compose.material3.Checkbox(
+                    Checkbox(
                         checked = split.selected,
                         onCheckedChange = { onToggle(actualIndex) },
                         enabled = !isBase,
@@ -971,22 +1061,6 @@ private fun SplitsCard(
     }
 }
 
-// ── Reusable helpers ────────────────────────────────────
-
-/**
- * Elevated card with a collapsible body. Header is always visible (icon + title
- * + optional collapsed-state summary + optional badge); tapping toggles the body.
- *
- * Distinct from the dialog's MenuCard by design: the in-app preview is a bottom
- * sheet with room to breathe, so we use a tappable elevated header strip with a
- * trailing chevron + count badge instead of the dialog's compact icon-tile look.
- *
- * @param summary one-line preview shown next to the title when collapsed (and
- *                hidden once expanded — the body content takes over).
- * @param badge   small chip on the right (e.g. "12" for a permission count).
- * @param defaultExpanded false to start collapsed; tap to open. Default true
- *                preserves existing behavior for callers that haven't opted in.
- */
 @Composable
 private fun SectionCard(
     icon: androidx.compose.ui.graphics.vector.ImageVector,
@@ -1068,8 +1142,8 @@ private fun SectionCard(
 internal fun InfoChip(
     label: String,
     leadingIcon: @Composable (() -> Unit)? = null,
-    containerColor: androidx.compose.ui.graphics.Color = MaterialTheme.colorScheme.surfaceContainerHigh,
-    contentColor: androidx.compose.ui.graphics.Color = MaterialTheme.colorScheme.onSurfaceVariant,
+    containerColor: Color = MaterialTheme.colorScheme.surfaceContainerHigh,
+    contentColor: Color = MaterialTheme.colorScheme.onSurfaceVariant,
 ) {
     Surface(
         shape = MaterialTheme.shapes.small,

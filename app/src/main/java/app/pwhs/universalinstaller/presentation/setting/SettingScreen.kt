@@ -102,6 +102,9 @@ fun SettingScreen(
         onAutoConfirmExternalInstallChanged = viewModel::setAutoConfirmExternalInstall,
         onExtractorOutputPathChanged = viewModel::setExtractorOutputPath,
         onExtractorFilenameTemplateChanged = viewModel::setExtractorFilenameTemplate,
+        onProfilesClick = {
+            context.startActivity(android.content.Intent(context, app.pwhs.universalinstaller.presentation.setting.profile.ProfileActivity::class.java))
+        },
     )
 }
 
@@ -129,6 +132,7 @@ private fun SettingUi(
     onAutoConfirmExternalInstallChanged: (Boolean) -> Unit = {},
     onExtractorOutputPathChanged: (String) -> Unit = {},
     onExtractorFilenameTemplateChanged: (String) -> Unit = {},
+    onProfilesClick: () -> Unit = {},
 ) {
     val context = androidx.compose.ui.platform.LocalContext.current
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
@@ -308,6 +312,44 @@ private fun SettingUi(
                                 onCheckedChange = onAutoConfirmExternalInstallChanged,
                             )
                         },
+                        colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                    )
+                }
+            }
+
+            // ── Profiles Section ─────────────────────────
+            item {
+                SettingsSection(
+                    title = stringResource(R.string.setting_section_profiles),
+                    icon = Icons.Rounded.Badge
+                ) {
+                    ListItem(
+                        headlineContent = {
+                            Text(stringResource(R.string.setting_profiles_title), style = MaterialTheme.typography.bodyLarge)
+                        },
+                        supportingContent = {
+                            Text(
+                                text = stringResource(R.string.setting_profiles_subtitle),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        },
+                        leadingContent = {
+                            Icon(
+                                imageVector = Icons.Rounded.Badge,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(24.dp),
+                            )
+                        },
+                        trailingContent = {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowRight,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        },
+                        modifier = Modifier.clickable(onClick = onProfilesClick),
                         colors = ListItemDefaults.colors(containerColor = Color.Transparent),
                     )
                 }

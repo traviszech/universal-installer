@@ -163,6 +163,10 @@ fun InstallScreen(
             context.startActivity(android.content.Intent(context, app.pwhs.universalinstaller.presentation.sync.SyncActivity::class.java))
         },
         onSetMergeSplits = viewModel::setMergeSplits,
+        onProfileSelected = { profile ->
+            if (profile != null) viewModel.applyProfile(profile)
+        },
+        onMappingChanged = viewModel::setAppProfileMapping,
     )
 }
 
@@ -201,6 +205,8 @@ private fun InstallUi(
     onToggleSplit: (Int) -> Unit = {},
     onOpenSyncServer: () -> Unit = {},
     onSetMergeSplits: (Boolean) -> Unit = { },
+    onProfileSelected: (app.pwhs.universalinstaller.domain.model.InstallerProfile?) -> Unit = {},
+    onMappingChanged: (String, String?) -> Unit = { _, _ -> },
 ) {
     val context = LocalContext.current
     val resource = LocalResources.current
@@ -384,6 +390,10 @@ private fun InstallUi(
                 onAttachObb = { obbPickerLauncher.launch(arrayOf("*/*")) },
                 onRemoveObb = onRemoveObb,
                 onToggleSplit = onToggleSplit,
+                profiles = uiState.installerProfiles,
+                appProfileMapping = uiState.appProfileMapping,
+                onProfileSelected = onProfileSelected,
+                onMappingChanged = onMappingChanged,
             )
         }
     }
