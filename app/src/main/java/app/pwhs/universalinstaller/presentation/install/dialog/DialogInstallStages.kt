@@ -1,10 +1,8 @@
 package app.pwhs.universalinstaller.presentation.install.dialog
 
 import android.graphics.BitmapFactory
-import androidx.compose.animation.core.Spring
+import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.spring
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -28,6 +26,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.ProgressIndicatorDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -115,8 +114,13 @@ fun DialogInstallingContent(
         Spacer(modifier = Modifier.height(20.dp))
 
         if (progressFraction != null) {
+            val animatedProgress by animateFloatAsState(
+                targetValue = progressFraction.coerceIn(0f, 1f),
+                animationSpec = ProgressIndicatorDefaults.ProgressAnimationSpec,
+                label = "InstallProgress",
+            )
             LinearProgressIndicator(
-                progress = { progressFraction.coerceIn(0f, 1f) },
+                progress = { animatedProgress },
                 modifier = Modifier.fillMaxWidth(),
             )
         } else {
@@ -154,10 +158,7 @@ fun DialogSuccessContent(
 ) {
     val scale by animateFloatAsState(
         targetValue = 1f,
-        animationSpec = spring(
-            dampingRatio = Spring.DampingRatioMediumBouncy,
-            stiffness = Spring.StiffnessLow,
-        ),
+        animationSpec = DialogMotion.GenericSpring,
         label = "successIconScale",
     )
 

@@ -279,17 +279,9 @@ fun DialogMenuContent(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(24.dp),
+            .padding(horizontal = 24.dp), // Reduced vertical padding
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        // ── Title ──
-        Text(
-            text = stringResource(R.string.dialog_menu_title),
-            style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.SemiBold),
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
         // ── Tabs ──
         TabRow(
             selectedTabIndex = pagerState.currentPage,
@@ -323,14 +315,12 @@ fun DialogMenuContent(
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(12.dp)) // Reduced spacer
 
         // ── Pager Content ──
         HorizontalPager(
             state = pagerState,
-            modifier = Modifier
-                .weight(1f)
-                .heightIn(max = 380.dp),
+            modifier = Modifier.weight(1f), // Allow it to take all available space
             verticalAlignment = Alignment.Top,
         ) { page ->
             // Use a LazyColumn inside each page for scrolling
@@ -375,7 +365,7 @@ fun DialogMenuContent(
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(12.dp)) // Reduced spacer
 
         // ── Buttons: [Back] [Install] ──
         Row(
@@ -402,6 +392,8 @@ fun DialogMenuContent(
                 Text(stringResource(R.string.dialog_install_btn))
             }
         }
+        
+        Spacer(modifier = Modifier.height(16.dp)) // Padding from card bottom
     }
 }
 

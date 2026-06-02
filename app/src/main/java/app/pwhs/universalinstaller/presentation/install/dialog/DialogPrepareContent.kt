@@ -8,7 +8,6 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -21,7 +20,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowForward
 import androidx.compose.material.icons.rounded.Menu
@@ -38,7 +36,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -47,15 +44,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import app.pwhs.universalinstaller.R
 import app.pwhs.universalinstaller.domain.model.ApkInfo
-import androidx.compose.ui.graphics.asImageBitmap
-import androidx.core.graphics.drawable.toBitmap
-import androidx.compose.material.icons.rounded.Android
 
-/**
- * Stage 2: Prepare — clean, compact APK info display.
- * Shows icon, name, version, warning chips, and 3 buttons: Menu, Install, Cancel.
- * Inspired by InstallerX-Revived's InstallPrepareDialog.
- */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun DialogPrepareContent(
@@ -73,61 +62,9 @@ fun DialogPrepareContent(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(24.dp)
-            .animateContentSize(),
+            .padding(horizontal = 24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        // ── App Icon ──
-        AnimatedContent(
-            targetState = apkInfo.icon,
-            transitionSpec = {
-                fadeIn(tween(300)) togetherWith fadeOut(tween(150))
-            },
-            label = "IconAnimation",
-        ) { drawable ->
-            if (drawable != null) {
-                Image(
-                    bitmap = drawable.toBitmap(128, 128).asImageBitmap(),
-                    contentDescription = apkInfo.appName,
-                    modifier = Modifier
-                        .size(64.dp)
-                        .clip(RoundedCornerShape(16.dp)),
-                )
-            } else {
-                Icon(
-                    imageVector = Icons.Rounded.Android,
-                    contentDescription = null,
-                    modifier = Modifier.size(64.dp),
-                    tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
-                )
-            }
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // ── App Name ──
-        Text(
-            text = apkInfo.appName.ifBlank { apkInfo.packageName },
-            style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.SemiBold),
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.basicMarquee(),
-        )
-
-        Spacer(modifier = Modifier.height(4.dp))
-
-        // ── Package Name ──
-        Text(
-            text = apkInfo.packageName,
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.basicMarquee(),
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
         // ── Version Info ──
         AnimatedContent(
             targetState = Triple(isUpdate, isDowngrade, apkInfo.versionName),
@@ -203,7 +140,8 @@ fun DialogPrepareContent(
             FlowRow(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 12.dp),
+                    .padding(top = 12.dp)
+                    .animateContentSize(animationSpec = DialogMotion.ContentSpring),
                 horizontalArrangement = Arrangement.Center,
                 verticalArrangement = Arrangement.spacedBy(4.dp),
             ) {

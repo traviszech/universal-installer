@@ -53,6 +53,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
@@ -75,6 +76,11 @@ import app.pwhs.universalinstaller.ui.theme.UniversalInstallerTheme
 import app.pwhs.universalinstaller.util.LocaleHelper
 import app.pwhs.universalinstaller.util.WindowBlurEffect
 import app.pwhs.universalinstaller.util.extension.getDisplayName
+import app.pwhs.universalinstaller.presentation.install.dialog.DialogMotion
+import app.pwhs.universalinstaller.presentation.install.dialog.PositionDialog
+import app.pwhs.universalinstaller.presentation.install.dialog.dialogInnerWidget
+import app.pwhs.universalinstaller.presentation.install.dialog.generateDialogParams
+import app.pwhs.universalinstaller.presentation.install.dialog.LoadingContent
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import ru.solrudev.ackpine.splits.ApkSplits.validate
 import ru.solrudev.ackpine.splits.SplitPackage.Companion.toSplitPackage
@@ -240,6 +246,13 @@ class DialogInstallActivity : ComponentActivity() {
             }
 
             UniversalInstallerTheme {
+                val configuration = LocalConfiguration.current
+                val screenHeight = configuration.screenHeightDp.dp
+                val maxDialogHeight = screenHeight * 0.8f
+
+                // Window level blur (Android 12+)
+                WindowBlurEffect(enabled = true)
+
                 if (pendingRisks.isNotEmpty()) {
                     RiskConfirmDialog(
                         risks = pendingRisks,
@@ -251,60 +264,80 @@ class DialogInstallActivity : ComponentActivity() {
                     )
                 }
 
-                Dialog(
-                    onDismissRequest = {
-                        viewModel.dismissPendingInstall()
-                        viewModel.dialogClose()
-                        finish()
-                    },
-                    properties = DialogProperties(
-                        dismissOnClickOutside = true,
-                        dismissOnBackPress = true,
-                        usePlatformDefaultWidth = true,
-                    ),
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .pointerInput(Unit) {
+                            detectTapGestures(onTap = {
+                                viewModel.dismissPendingInstall()
+                                viewModel.dialogClose()
+                                viewModel.clearDialogTarget()
+                                finish()
+                            })
+                        },
+                    contentAlignment = Alignment.Center
                 ) {
-                    // Apply background blur to the dialog window itself on Android 12+
-                    WindowBlurEffect(blurRadius = 30)
+                    Surface(
+                        modifier = Modifier
+                            .padding(24.dp)
+                            .widthIn(max = 480.dp)
+                            .heightIn(max = maxDialogHeight)
+                            .pointerInput(Unit) {
+                                detectTapGestures(onTap = { /* consume clicks */ })
+                            },
+                        shape = MaterialTheme.shapes.extraLarge, // 28dp
+                        color = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.8f),
+                        tonalElevation = AlertDialogDefaults.TonalElevation,
+                    ) {
+                        val params = generateDialogParams(
+                            uiState = uiState,
+                            dialogTarget = dialogTarget,
+                            autoOpenAfterInstall = autoOpenAfterInstall,
+                            onInstall = handleInstallTap,
+                            onCancel = {
+                                viewModel.dismissPendingInstall()
+                                viewModel.dialogClose()
+                                viewModel.clearDialogTarget()
+                                finish()
+                            },
+                            onMenu = viewModel::dialogShowMenu,
+                            onMenuBack = viewModel::dialogBackToPrepare,
+                            onCheckVirusTotal = {
+                                viewModel.scanVirusTotal(this@DialogInstallActivity)
+                            },
+                            onRemoveObb = { obb -> viewModel.removeAttachedObb(obb.uri) },
+                            onToggleSplit = viewModel::toggleSplit,
+                            onAttachObb = { obbPickerLauncher.launch(arrayOf("*/*")) },
+                            onBackground = {
+                                // Dialog dismisses; install continues in the background, tracked by
+                                // the system notification. Clear the target so a subsequent open
+                                // doesn't replay Success/Failed for an already-finished session.
+                                viewModel.dialogClose()
+                                viewModel.clearDialogTarget()
+                                finish()
+                            },
+                            onOpenInstalledApp = { pkg ->
+                                viewModel.getAppLaunchIntent(pkg)?.let { startActivity(it) }
+                                viewModel.dialogClose()
+                                viewModel.clearDialogTarget()
+                                finish()
+                            },
+                            onCloseAfterResult = {
+                                viewModel.dialogClose()
+                                viewModel.clearDialogTarget()
+                                finish()
+                            },
+                        )
 
-                    DialogContent(
-                        uiState = uiState,
-                        dialogTarget = dialogTarget,
-                        autoOpenAfterInstall = autoOpenAfterInstall,
-                        onInstall = handleInstallTap,
-                        onCancel = {
-                            viewModel.dismissPendingInstall()
-                            viewModel.dialogClose()
-                            viewModel.clearDialogTarget()
-                            finish()
-                        },
-                        onMenu = viewModel::dialogShowMenu,
-                        onMenuBack = viewModel::dialogBackToPrepare,
-                        onCheckVirusTotal = {
-                            viewModel.scanVirusTotal(this@DialogInstallActivity)
-                        },
-                        onRemoveObb = { obb -> viewModel.removeAttachedObb(obb.uri) },
-                        onToggleSplit = viewModel::toggleSplit,
-                        onAttachObb = { obbPickerLauncher.launch(arrayOf("*/*")) },
-                        onBackground = {
-                            // Dialog dismisses; install continues in the background, tracked by
-                            // the system notification. Clear the target so a subsequent open
-                            // doesn't replay Success/Failed for an already-finished session.
-                            viewModel.dialogClose()
-                            viewModel.clearDialogTarget()
-                            finish()
-                        },
-                        onOpenInstalledApp = { pkg ->
-                            viewModel.getAppLaunchIntent(pkg)?.let { startActivity(it) }
-                            viewModel.dialogClose()
-                            viewModel.clearDialogTarget()
-                            finish()
-                        },
-                        onCloseAfterResult = {
-                            viewModel.dialogClose()
-                            viewModel.clearDialogTarget()
-                            finish()
-                        },
-                    )
+                        PositionDialog(
+                            centerIcon = dialogInnerWidget(params.icon),
+                            centerTitle = dialogInnerWidget(params.title),
+                            centerSubtitle = dialogInnerWidget(params.subtitle),
+                            centerText = dialogInnerWidget(params.text),
+                            centerContent = dialogInnerWidget(params.content),
+                            centerButton = dialogInnerWidget(params.buttons)
+                        )
+                    }
                 }
             }
         }
@@ -425,154 +458,5 @@ class DialogInstallActivity : ComponentActivity() {
         }
 
         return out.distinct()
-    }
-}
-
-/**
- * The visual layer of the install dialog. Uses AnimatedContent to smoothly transition
- * between stages (Loading → Prepare → Menu). Install triggers finish() immediately.
- */
-@Composable
-private fun DialogContent(
-    uiState: InstallUiState,
-    dialogTarget: DialogTarget?,
-    autoOpenAfterInstall: Boolean,
-    onInstall: () -> Unit,
-    onCancel: () -> Unit,
-    onMenu: () -> Unit,
-    onMenuBack: () -> Unit,
-    onCheckVirusTotal: () -> Unit,
-    onRemoveObb: (AttachedObb) -> Unit,
-    onToggleSplit: (Int) -> Unit,
-    onAttachObb: () -> Unit,
-    onBackground: () -> Unit,
-    onOpenInstalledApp: (String) -> Unit,
-    onCloseAfterResult: () -> Unit,
-) {
-    Surface(
-        modifier = Modifier
-            .fillMaxWidth()
-            .widthIn(max = 480.dp)
-            .heightIn(max = 640.dp),
-        shape = MaterialTheme.shapes.extraLarge, // Use 28.dp from ExpressiveShapes
-        color = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.8f), // Semi-transparent for glass effect
-        tonalElevation = AlertDialogDefaults.TonalElevation,
-    ) {
-        AnimatedContent(
-            targetState = uiState.dialogStage,
-            transitionSpec = {
-                fadeIn(tween(200)) togetherWith fadeOut(tween(150))
-            },
-            label = "DialogStageTransition",
-        ) { stage ->
-            when (stage) {
-                    DialogStage.Loading -> {
-                        LoadingContent()
-                    }
-
-                    DialogStage.Prepare -> {
-                        val info = uiState.pendingApkInfo
-                        if (info != null) {
-                            DialogPrepareContent(
-                                apkInfo = info,
-                                installedVersionName = info.installedVersionName,
-                                installedVersionCode = info.installedVersionCode,
-                                onInstall = onInstall,
-                                onMenu = onMenu,
-                                onCancel = onCancel,
-                            )
-                        } else {
-                            LoadingContent()
-                        }
-                    }
-
-                    DialogStage.Menu -> {
-                        val info = uiState.pendingApkInfo
-                        if (info != null) {
-                            DialogMenuContent(
-                                apkInfo = info,
-                                attachedObbFiles = uiState.attachedObbFiles,
-                                onBack = onMenuBack,
-                                onInstall = onInstall,
-                                onCheckVirusTotal = onCheckVirusTotal,
-                                onRemoveObb = onRemoveObb,
-                                onToggleSplit = onToggleSplit,
-                                onAttachObb = onAttachObb,
-                            )
-                        } else {
-                            LoadingContent()
-                        }
-                    }
-
-                    DialogStage.Installing -> {
-                        if (dialogTarget != null) {
-                            val sp = uiState.sessionsProgress.find { it.id == dialogTarget.sessionId }
-                            val fraction = sp?.let {
-                                if (it.progressMax > 0) it.currentProgress.toFloat() / it.progressMax else null
-                            }
-                            DialogInstallingContent(
-                                target = dialogTarget,
-                                progressFraction = fraction,
-                                onBackground = onBackground,
-                            )
-                        } else {
-                            LoadingContent()
-                        }
-                    }
-
-                    DialogStage.Success -> {
-                        if (dialogTarget != null) {
-                            val context = LocalContext.current
-                            val canOpen = remember(dialogTarget.packageName) {
-                                dialogTarget.packageName.isNotBlank() &&
-                                    context.packageManager.getLaunchIntentForPackage(dialogTarget.packageName) != null
-                            }
-                            DialogSuccessContent(
-                                target = dialogTarget,
-                                canOpen = canOpen,
-                                autoOpenCountdownStartSeconds = if (autoOpenAfterInstall) 3 else null,
-                                onOpen = { onOpenInstalledApp(dialogTarget.packageName) },
-                                onDone = onCloseAfterResult,
-                            )
-                        } else {
-                            LoadingContent()
-                        }
-                    }
-
-                    is DialogStage.Failed -> {
-                        DialogFailedContent(
-                            target = dialogTarget,
-                            errorMessage = stage.errorMessage,
-                            onClose = onCloseAfterResult,
-                        )
-                    }
-
-                    DialogStage.None -> {
-                        Spacer(modifier = Modifier.size(0.dp))
-                    }
-                }
-            }
-        }
-}
-
-@Composable
-private fun LoadingContent() {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(48.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        CircularProgressIndicator(
-            modifier = Modifier.size(40.dp),
-            color = MaterialTheme.colorScheme.primary,
-            strokeWidth = 3.dp,
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        Text(
-            text = stringResource(R.string.dialog_loading_text),
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
     }
 }

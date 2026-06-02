@@ -44,8 +44,7 @@ fun DialogResultContent(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(24.dp)
-            .animateContentSize(),
+            .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         // ── Icon ──
