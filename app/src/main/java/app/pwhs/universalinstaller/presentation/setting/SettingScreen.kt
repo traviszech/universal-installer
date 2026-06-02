@@ -205,7 +205,7 @@ private fun SettingUi(
                         if (uiState.rootState == RootState.DENIED) {
                             ListItem(
                                 headlineContent = { Text("Retry Root Probe") },
-                                leadingContent = { Icon(Icons.Rounded.RocketLaunch, null) },
+                                leadingContent = { Icon(Icons.Rounded.RocketLaunch, null, tint = MaterialTheme.colorScheme.primary) },
                                 modifier = Modifier.clickable { onRootRetry() },
                                 colors = ListItemDefaults.colors(containerColor = Color.Transparent)
                             )
@@ -419,7 +419,7 @@ private fun SettingUi(
                 SettingsSection(title = "Interface", icon = Icons.Rounded.Palette) {
                     ListItem(
                         headlineContent = { Text(stringResource(R.string.theme_screen_title)) },
-                        leadingContent = { Icon(Icons.Rounded.Palette, null) },
+                        leadingContent = { Icon(Icons.Rounded.Palette, null, tint = MaterialTheme.colorScheme.primary) },
                         modifier = Modifier.clickable {
                             context.startActivity(android.content.Intent(context, app.pwhs.universalinstaller.presentation.setting.theme.ThemeActivity::class.java))
                         },
@@ -484,7 +484,7 @@ private fun SettingUi(
                 SettingsSection(title = "Sync", icon = Icons.Rounded.WifiTethering) {
                     ListItem(
                         headlineContent = { Text("Sync Control Panel") },
-                        leadingContent = { Icon(Icons.Rounded.WifiTethering, null) },
+                        leadingContent = { Icon(Icons.Rounded.WifiTethering, null, tint = MaterialTheme.colorScheme.primary) },
                         modifier = Modifier.clickable {
                             context.startActivity(android.content.Intent(context, app.pwhs.universalinstaller.presentation.sync.SyncActivity::class.java))
                         },
@@ -527,7 +527,7 @@ private fun SettingUi(
                         onValueChange = onVirusTotalKeyChanged,
                         label = { Text("VirusTotal API Key") },
                         modifier = Modifier.fillMaxWidth().padding(16.dp),
-                        leadingIcon = { Icon(Icons.Rounded.Key, null) },
+                        leadingIcon = { Icon(Icons.Rounded.Key, null, tint = MaterialTheme.colorScheme.primary) },
                         placeholder = { Text("Paste API key here...") },
                         singleLine = true,
                     )
@@ -540,7 +540,7 @@ private fun SettingUi(
                     ListItem(
                         headlineContent = { Text(stringResource(R.string.setting_section_about)) },
                         supportingContent = { Text("v${uiState.appVersion}") },
-                        leadingContent = { Icon(Icons.Rounded.Info, null) },
+                        leadingContent = { Icon(Icons.Rounded.Info, null, tint = MaterialTheme.colorScheme.primary) },
                         modifier = Modifier.clickable {
                             context.startActivity(android.content.Intent(context, app.pwhs.universalinstaller.presentation.setting.about.AboutActivity::class.java))
                         },
@@ -548,7 +548,7 @@ private fun SettingUi(
                     )
                     ListItem(
                         headlineContent = { Text("Diagnostics") },
-                        leadingContent = { Icon(Icons.Rounded.BugReport, null) },
+                        leadingContent = { Icon(Icons.Rounded.BugReport, null, tint = MaterialTheme.colorScheme.primary) },
                         modifier = Modifier.clickable {
                             context.startActivity(android.content.Intent(context, app.pwhs.universalinstaller.presentation.setting.diagnostics.DiagnosticsActivity::class.java))
                         },

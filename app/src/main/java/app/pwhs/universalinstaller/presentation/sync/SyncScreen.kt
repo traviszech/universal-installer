@@ -466,7 +466,7 @@ private fun SyncUi(
                                     )
                                 },
                                 leadingContent = {
-                                    Icon(Icons.Rounded.Public, contentDescription = null)
+                                    Icon(Icons.Rounded.Public, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                                 },
                                 colors = ListItemDefaults.colors(containerColor = Color.Transparent)
                             )
@@ -485,7 +485,7 @@ private fun SyncUi(
                                         )
                                     },
                                     leadingContent = {
-                                        Icon(Icons.Rounded.Key, contentDescription = null)
+                                        Icon(Icons.Rounded.Key, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                                     },
                                     colors = ListItemDefaults.colors(containerColor = Color.Transparent)
                                 )

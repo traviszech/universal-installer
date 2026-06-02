@@ -174,7 +174,7 @@ data class RootOptions(
 
 data class SettingUiState(
     val themeMode: ThemeMode = ThemeMode.System,
-    val dynamicColor: Boolean = true,
+    val dynamicColor: Boolean = false,
     val amoledMode: Boolean = false,
     val useShizuku: Boolean = false,
     val useRoot: Boolean = false,
@@ -578,7 +578,7 @@ class SettingViewModel(
             val name = prefs[PreferencesKeys.THEME_MODE] ?: ThemeMode.System.name
             ThemeMode.entries.find { it.name == name } ?: ThemeMode.System
         },
-        dataStore.data.map { it[PreferencesKeys.DYNAMIC_COLOR] ?: true },
+        dataStore.data.map { it[PreferencesKeys.DYNAMIC_COLOR] ?: false },
         dataStore.data.map { it[PreferencesKeys.AMOLED_MODE] ?: false },
         dataStore.data.map { it[PreferencesKeys.USE_SHIZUKU] ?: false },
         dataStore.data.map { it[PreferencesKeys.VIRUSTOTAL_API_KEY] ?: "" },

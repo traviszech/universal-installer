@@ -292,7 +292,7 @@ private fun AboutRow(
     icon: ImageVector,
     title: String,
     subtitle: String,
-    iconTint: androidx.compose.ui.graphics.Color = MaterialTheme.colorScheme.onSurfaceVariant,
+    iconTint: androidx.compose.ui.graphics.Color = MaterialTheme.colorScheme.primary,
     onClick: () -> Unit,
 ) {
     Row(
@@ -337,7 +337,7 @@ private fun AboutRowPainter(
         Icon(
             painter = iconPainter,
             contentDescription = null,
-            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            tint = MaterialTheme.colorScheme.primary,
             modifier = Modifier.size(22.dp),
         )
         Spacer(Modifier.width(16.dp))

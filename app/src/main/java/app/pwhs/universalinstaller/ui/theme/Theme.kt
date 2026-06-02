@@ -118,7 +118,7 @@ private val DarkExtendedColors = ExtendedColors(
 @Composable
 fun UniversalInstallerTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    dynamicColor: Boolean = true,
+    dynamicColor: Boolean = false,
     amoledMode: Boolean = false,
     content: @Composable () -> Unit
 ) {

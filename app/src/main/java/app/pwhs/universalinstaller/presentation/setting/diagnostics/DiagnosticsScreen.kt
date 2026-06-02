@@ -307,6 +307,7 @@ fun DiagnosticsScreen(modifier: Modifier = Modifier) {
                         Icon(
                             imageVector = Icons.Rounded.BugReport,
                             contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(16.dp),
                         )
                     },
@@ -324,6 +325,7 @@ fun DiagnosticsScreen(modifier: Modifier = Modifier) {
                         Icon(
                             imageVector = Icons.Rounded.Warning,
                             contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(16.dp),
                         )
                     },

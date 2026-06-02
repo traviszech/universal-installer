@@ -124,7 +124,7 @@ private fun ThemeUi(
                                 ThemeMode.Dark -> Icons.Rounded.DarkMode
                             },
                             contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.padding(end = 16.dp).size(24.dp)
                         )
                         Text(
