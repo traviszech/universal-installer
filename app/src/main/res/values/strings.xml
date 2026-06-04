@@ -314,8 +314,11 @@
     <string name="setting_auto_open_title">Open app after install</string>
     <string name="setting_auto_open_subtitle">Launch the installed app from the success screen — with a 3-second cancellable countdown</string>
     <string name="setting_auto_confirm_title">Auto-confirm external installs</string>
-    <string name="setting_auto_confirm_subtitle">Skip the confirmation dialog when an APK is opened from another app</string>
+    <string name="setting_auto_confirm_subtitle">Skip confirmation dialog when an APK is opened from another app</string>
+    <string name="setting_show_download_tab_title">Show Download Tab</string>
+    <string name="setting_show_download_tab_subtitle">Show the Download tab on the main screen for remote APK installs</string>
     <string name="setting_default_installer_title">Set as default installer</string>
+
     <string name="setting_default_installer_subtitle">Disable system installer to always use Universal Installer for APK files (requires Shizuku or Root)</string>
     <string name="setting_default_installer_needs_backend">Enable Shizuku or Root first to change the default installer</string>
     <string name="setting_default_installer_enabled">Universal Installer is now the default</string>

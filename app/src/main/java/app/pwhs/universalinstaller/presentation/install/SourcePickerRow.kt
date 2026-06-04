@@ -72,15 +72,21 @@ internal fun SourcePicker(
     onDismissDownloadError: () -> Unit,
     onOpenDownloadHistory: () -> Unit,
     modifier: Modifier = Modifier,
+    showDownloadTab: Boolean = true,
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
-        SourceTabRow(
-            selected = selectedTab,
-            onSelect = onTabChange,
-        )
-        Spacer(Modifier.height(20.dp))
+        if (showDownloadTab) {
+            SourceTabRow(
+                selected = selectedTab,
+                onSelect = onTabChange,
+            )
+            Spacer(Modifier.height(20.dp))
+        }
+
+        val effectiveTab = if (showDownloadTab) selectedTab else SourceTab.Local
+
         AnimatedContent(
-            targetState = selectedTab,
+            targetState = effectiveTab,
             transitionSpec = { fadeIn() togetherWith fadeOut() },
             label = "source_tab",
         ) { tab ->
