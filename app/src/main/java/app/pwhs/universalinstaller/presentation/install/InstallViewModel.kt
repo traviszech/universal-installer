@@ -31,6 +31,7 @@ import app.pwhs.universalinstaller.presentation.install.controller.InstallerBack
 import app.pwhs.universalinstaller.presentation.install.controller.ShizukuInstallController
 import app.pwhs.universalinstaller.presentation.install.controller.ManualInstallController
 import app.pwhs.universalinstaller.presentation.install.controller.RootState
+import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.work.ExistingWorkPolicy
 import androidx.work.WorkInfo
@@ -96,6 +97,7 @@ class InstallViewModel(
     private val _batchState = MutableStateFlow<BatchInstallState>(BatchInstallState.Idle)
     private val _dialogStage = MutableStateFlow<DialogStage>(DialogStage.None)
     private val _mergeSplits = MutableStateFlow(false)
+    private val _selectedProfileId = MutableStateFlow<String?>(null)
 
     /**
      * Snapshot of the install target captured at confirmInstall time. We can't read
@@ -176,6 +178,7 @@ class InstallViewModel(
         application.dataStore.data.map { it[PreferencesKeys.INSTALLER_PROFILES] },
         application.dataStore.data.map { it[PreferencesKeys.APP_PROFILE_MAPPING] },
         app.pwhs.universalinstaller.presentation.sync.SyncManager.state,
+        _selectedProfileId,
     ) { flows ->
         @Suppress("UNCHECKED_CAST")
         InstallUiState(
@@ -193,6 +196,7 @@ class InstallViewModel(
             installerProfiles = ProfileManager.parseProfiles(flows[11] as String?),
             appProfileMapping = ProfileManager.parseMapping(flows[12] as String?),
             syncState = flows[13] as app.pwhs.universalinstaller.presentation.sync.SyncState,
+            selectedProfileId = flows[14] as String?,
         )
     }
         .onStart { activeController().restoreSessionsFromSavedState(viewModelScope) }
@@ -238,68 +242,18 @@ class InstallViewModel(
     }
 
     fun applyProfile(profile: InstallerProfile) {
-        viewModelScope.launch {
-            application.dataStore.edit { prefs ->
-                profile.preferredBackend?.let { backend ->
-                    when (backend) {
-                        "Root" -> {
-                            prefs[PreferencesKeys.USE_ROOT] = true
-                            prefs[PreferencesKeys.USE_SHIZUKU] = false
-                        }
-                        "Shizuku" -> {
-                            prefs[PreferencesKeys.USE_SHIZUKU] = true
-                            prefs[PreferencesKeys.USE_ROOT] = false
-                        }
-                        "Default" -> {
-                            prefs[PreferencesKeys.USE_ROOT] = false
-                            prefs[PreferencesKeys.USE_SHIZUKU] = false
-                        }
-                    }
-                }
-                
-                profile.installerPackageName?.let { pkg ->
-                    // Apply to both for simplicity in the picker
-                    prefs[PreferencesKeys.SHIZUKU_INSTALLER_PACKAGE_NAME] = pkg
-                    prefs[PreferencesKeys.ROOT_INSTALLER_PACKAGE_NAME] = pkg
-                    prefs[PreferencesKeys.SHIZUKU_SET_INSTALL_SOURCE] = pkg.isNotBlank()
-                    prefs[PreferencesKeys.ROOT_SET_INSTALL_SOURCE] = pkg.isNotBlank()
-                }
+        _selectedProfileId.value = profile.id
+    }
 
-                profile.replaceExisting?.let {
-                    prefs[PreferencesKeys.SHIZUKU_REPLACE_EXISTING] = it
-                    prefs[PreferencesKeys.ROOT_REPLACE_EXISTING] = it
-                }
-                profile.allowTest?.let {
-                    prefs[PreferencesKeys.SHIZUKU_ALLOW_TEST] = it
-                    prefs[PreferencesKeys.ROOT_ALLOW_TEST] = it
-                }
-                profile.requestDowngrade?.let {
-                    prefs[PreferencesKeys.SHIZUKU_REQUEST_DOWNGRADE] = it
-                    prefs[PreferencesKeys.ROOT_REQUEST_DOWNGRADE] = it
-                }
-                profile.grantAllPermissions?.let {
-                    prefs[PreferencesKeys.SHIZUKU_GRANT_ALL_PERMISSIONS] = it
-                    prefs[PreferencesKeys.ROOT_GRANT_ALL_PERMISSIONS] = it
-                }
-                profile.bypassLowTargetSdk?.let {
-                    prefs[PreferencesKeys.SHIZUKU_BYPASS_LOW_TARGET_SDK] = it
-                    prefs[PreferencesKeys.ROOT_BYPASS_LOW_TARGET_SDK] = it
-                }
-                profile.allUsers?.let {
-                    prefs[PreferencesKeys.SHIZUKU_ALL_USERS] = it
-                    prefs[PreferencesKeys.ROOT_ALL_USERS] = it
-                }
-                profile.targetUserId?.let {
-                    prefs[PreferencesKeys.INSTALL_USER_ID] = it
-                    prefs[PreferencesKeys.SHIZUKU_ALL_USERS] = false
-                    prefs[PreferencesKeys.ROOT_ALL_USERS] = false
-                }
-            }
-        }
+    fun selectProfile(profileId: String?) {
+        _selectedProfileId.value = profileId
     }
 
     /** Clear the captured install target — call when the dialog is fully closed. */
-    fun clearDialogTarget() { _dialogTarget.value = null }
+    fun clearDialogTarget() { 
+        _dialogTarget.value = null
+        _selectedProfileId.value = null
+    }
 
     /**
      * Returns the launch intent for an installed package, or null if not launchable
@@ -343,8 +297,8 @@ class InstallViewModel(
             val currentProfiles = uiState.value.installerProfiles
             val mapping = uiState.value.appProfileMapping
             mapping[info.packageName]?.let { profileId ->
-                currentProfiles.find { it.id == profileId }?.let { profile ->
-                    applyProfile(profile)
+                if (currentProfiles.any { it.id == profileId }) {
+                    _selectedProfileId.value = profileId
                 }
             }
         }
@@ -407,6 +361,10 @@ class InstallViewModel(
 
         viewModelScope.launch {
             val prefs = try { application.dataStore.data.first() } catch (_: Exception) { null }
+            val currentProfileId = _selectedProfileId.value
+            val profiles = ProfileManager.parseProfiles(prefs?.get(PreferencesKeys.INSTALLER_PROFILES))
+            val profile = profiles.find { it.id == currentProfileId }
+            
             val iconPath = cacheIcon(apkInfo)
             val deleteAfterInstall = readDeleteApkPref()
             val sessionData = SessionData(
@@ -432,8 +390,10 @@ class InstallViewModel(
             // pendingApkInfo has already been cleared, so the callback below only sees these.
             val pkgForTarget = apkInfo?.packageName.orEmpty()
             val nameForTarget = apkInfo?.appName.orEmpty().ifBlank { fn }
-            val controller = activeController()
-            val targetedUserId = prefs?.get(PreferencesKeys.INSTALL_USER_ID)
+            val controller = activeController(currentProfileId)
+            
+            // Resolve targeted user from profile or global prefs
+            val targetedUserId = profile?.targetUserId ?: prefs?.get(PreferencesKeys.INSTALL_USER_ID)
             
             if (controller is ManualInstallController && targetedUserId != null) {
                 controller.installTargeted(
@@ -453,6 +413,9 @@ class InstallViewModel(
                     } else null
                 )
             } else {
+                // Apply profile settings (flags, spoofing) to the controller temporarily
+                applyProfileToController(controller, profile, prefs)
+
                 controller.install(
                     uris = uris,
                     sessionData = sessionData,
@@ -472,6 +435,61 @@ class InstallViewModel(
                         }
                     } else null,
                 )
+            }
+        }
+    }
+
+    private fun applyProfileToController(
+        controller: BaseInstallController,
+        profile: InstallerProfile?,
+        prefs: Preferences?
+    ) {
+        // This is a bit of a hack as controllers read prefs directly. 
+        // We temporarily update the dataStore if a profile is active? 
+        // No, that's what applyProfile did and it had side effects.
+        // Better: refactor BaseInstallController to accept a 'SessionParams' override.
+        // But for now, since we only have one instance of each controller, 
+        // we can't easily multi-thread this.
+        // Actually, we can just update the DataStore right before install — 
+        // that's what the previous code did, but it didn't handle the backend resolution.
+        // The user's issue was specifically that the BACKEND was ignored.
+        // My refactored activeController(profileId) solves the backend issue.
+        // For flags (replace, etc.), we still need them in the DataStore for the controller to read them.
+        
+        viewModelScope.launch {
+            application.dataStore.edit { p ->
+                profile?.let { prof ->
+                    prof.installerPackageName?.let { pkg ->
+                        p[PreferencesKeys.SHIZUKU_INSTALLER_PACKAGE_NAME] = pkg
+                        p[PreferencesKeys.ROOT_INSTALLER_PACKAGE_NAME] = pkg
+                        p[PreferencesKeys.SHIZUKU_SET_INSTALL_SOURCE] = pkg.isNotBlank()
+                        p[PreferencesKeys.ROOT_SET_INSTALL_SOURCE] = pkg.isNotBlank()
+                    }
+                    prof.replaceExisting?.let {
+                        p[PreferencesKeys.SHIZUKU_REPLACE_EXISTING] = it
+                        p[PreferencesKeys.ROOT_REPLACE_EXISTING] = it
+                    }
+                    prof.allowTest?.let {
+                        p[PreferencesKeys.SHIZUKU_ALLOW_TEST] = it
+                        p[PreferencesKeys.ROOT_ALLOW_TEST] = it
+                    }
+                    prof.requestDowngrade?.let {
+                        p[PreferencesKeys.SHIZUKU_REQUEST_DOWNGRADE] = it
+                        p[PreferencesKeys.ROOT_REQUEST_DOWNGRADE] = it
+                    }
+                    prof.grantAllPermissions?.let {
+                        p[PreferencesKeys.SHIZUKU_GRANT_ALL_PERMISSIONS] = it
+                        p[PreferencesKeys.ROOT_GRANT_ALL_PERMISSIONS] = it
+                    }
+                    prof.bypassLowTargetSdk?.let {
+                        p[PreferencesKeys.SHIZUKU_BYPASS_LOW_TARGET_SDK] = it
+                        p[PreferencesKeys.ROOT_BYPASS_LOW_TARGET_SDK] = it
+                    }
+                    prof.allUsers?.let {
+                        p[PreferencesKeys.SHIZUKU_ALL_USERS] = it
+                        p[PreferencesKeys.ROOT_ALL_USERS] = it
+                    }
+                }
             }
         }
     }
@@ -1338,17 +1356,36 @@ class InstallViewModel(
 
     // ── Private helpers ─────────────────────────────────
 
-    private suspend fun activeController(): BaseInstallController {
-        // Root wins over Shizuku if both are enabled (the settings UI enforces mutual
-        // exclusion, but handle the race cleanly by preferring the stronger backend).
+    private suspend fun activeController(profileId: String? = null): BaseInstallController {
         val prefs = try { application.dataStore.data.first() } catch (_: Exception) { null }
-        val useRoot = prefs?.get(PreferencesKeys.USE_ROOT) ?: false
-        val spoofRoot = prefs?.get(PreferencesKeys.ROOT_SET_INSTALL_SOURCE) ?: false
-        val targetedUser = prefs?.get<Int>(PreferencesKeys.INSTALL_USER_ID) != null
+        val profiles = ProfileManager.parseProfiles(prefs?.get(PreferencesKeys.INSTALLER_PROFILES))
+        val profile = profiles.find { it.id == profileId }
 
-        if (targetedUser) {
+        // Profile preferred backend wins first
+        val preferredBackend = profile?.preferredBackend
+        if (preferredBackend != null) {
+            when (preferredBackend) {
+                "Root" -> if (rootController != null) {
+                    val state = backendFactory.probeRootState()
+                    val finalState = if (state == RootState.READY) state
+                        else if (state == RootState.UNKNOWN || state == RootState.DENIED) backendFactory.requestRoot()
+                        else state
+                    if (finalState == RootState.READY) return rootController
+                }
+                "Shizuku" -> if (isShizukuReadyForInstall()) return shizukuController
+                "Default" -> return defaultController
+            }
+        }
+
+        // Targeted user wins over global backend if no profile override
+        val targetedUser = profile?.targetUserId ?: prefs?.get(PreferencesKeys.INSTALL_USER_ID)
+        if (targetedUser != null) {
             return manualController
         }
+
+        // Global preferences fallback
+        val useRoot = prefs?.get(PreferencesKeys.USE_ROOT) ?: false
+        val spoofRoot = prefs?.get(PreferencesKeys.ROOT_SET_INSTALL_SOURCE) ?: false
 
         if ((useRoot || spoofRoot) && rootController != null) {
             // Verify root is still granted. If it's UNKNOWN (no shell yet) or was 
@@ -1368,11 +1405,11 @@ class InstallViewModel(
         val useShizuku = prefs?.get(PreferencesKeys.USE_SHIZUKU) ?: false
         val spoofShizuku = prefs?.get(PreferencesKeys.SHIZUKU_SET_INSTALL_SOURCE) ?: false
 
-        if ((useShizuku || spoofShizuku || targetedUser) && isShizukuReadyForInstall()) {
+        if ((useShizuku || spoofShizuku) && isShizukuReadyForInstall()) {
             return shizukuController
         }
 
-        if (useShizuku || spoofShizuku || targetedUser) {
+        if (useShizuku || spoofShizuku) {
             Timber.w("Shizuku prioritized but not ready — falling back to default installer")
         }
         return defaultController

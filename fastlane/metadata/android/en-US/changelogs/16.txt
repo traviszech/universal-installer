@@ -1,0 +1,6 @@
+- Fixed Work Profile installation issues by implementing a targeted manual installer.
+- Improved Split APK auto-selection logic to better handle multiple splits of the same architecture.
+- Added full Romanian language support.
+- Added a new setting to toggle the visibility of the Download tab on the main screen.
+- Fixed a race condition and improved result tracking for manual installations.
+- Cleaned up manual installation flow and improved UI feedback.

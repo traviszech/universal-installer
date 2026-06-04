@@ -128,4 +128,5 @@ data class InstallUiState(
     val installerProfiles: List<InstallerProfile> = emptyList(),
     val appProfileMapping: Map<String, String> = emptyMap(),
     val syncState: app.pwhs.universalinstaller.presentation.sync.SyncState = app.pwhs.universalinstaller.presentation.sync.SyncState.STOPPED,
+    val selectedProfileId: String? = null,
 )
