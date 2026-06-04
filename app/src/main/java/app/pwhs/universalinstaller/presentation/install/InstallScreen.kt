@@ -84,6 +84,12 @@ fun InstallScreen(
         }
     }.collectAsState(initial = false)
 
+    val showDownloadTab by remember(context) {
+        context.dataStore.data.map {
+            it[PreferencesKeys.SHOW_DOWNLOAD_TAB] ?: true
+        }
+    }.collectAsState(initial = true)
+
     // Risk consent gate — populated when the user taps Install on a downgrade or
     // a VirusTotal-flagged APK. We render an AlertDialog over the rest of the screen
     // and only proceed to the biometric gate + confirmInstall after they acknowledge.
@@ -119,6 +125,7 @@ fun InstallScreen(
         modifier = modifier,
         uiState = uiState,
         history = history,
+        showDownloadTab = showDownloadTab,
         onFilePicked = { uri, splitPackage, fileName ->
             viewModel.parseApkInfo(context, uri, splitPackage, fileName)
         },
@@ -180,6 +187,7 @@ private fun InstallUi(
     modifier: Modifier = Modifier,
     uiState: InstallUiState = InstallUiState(),
     history: List<InstallHistoryEntity> = emptyList(),
+    showDownloadTab: Boolean = true,
     onFilePicked: (uri: Uri, splitPackage: SplitPackage.Provider, fileName: String) -> Unit = { _, _, _ -> },
     onDownloadFromUrl: (String) -> Unit = {},
     onCancelDownload: () -> Unit = {},
@@ -505,6 +513,7 @@ private fun InstallUi(
                 SourcePicker(
                     selectedTab = selectedTab,
                     onTabChange = { selectedTab = it },
+                    showDownloadTab = showDownloadTab,
                     isParsing = uiState.isLoading,
                     downloadState = uiState.downloadState,
                     onFindAutomatic = onStartDeviceScan,

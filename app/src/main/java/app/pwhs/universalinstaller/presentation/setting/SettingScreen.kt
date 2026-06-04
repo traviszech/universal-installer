@@ -103,6 +103,7 @@ fun SettingScreen(
         onBiometricLockInstallChanged = viewModel::setBiometricLockInstall,
         onBiometricLockUninstallChanged = viewModel::setBiometricLockUninstall,
         onAutoConfirmExternalInstallChanged = viewModel::setAutoConfirmExternalInstall,
+        onShowDownloadTabChanged = viewModel::setShowDownloadTab,
         onDefaultInstallerChanged = viewModel::toggleDefaultInstaller,
         onProfilesClick = {
             context.startActivity(android.content.Intent(context, app.pwhs.universalinstaller.presentation.setting.profile.ProfileActivity::class.java))
@@ -132,6 +133,7 @@ private fun SettingUi(
     onBiometricLockInstallChanged: (Boolean) -> Unit = {},
     onBiometricLockUninstallChanged: (Boolean) -> Unit = {},
     onAutoConfirmExternalInstallChanged: (Boolean) -> Unit = {},
+    onShowDownloadTabChanged: (Boolean) -> Unit = {},
     onDefaultInstallerChanged: (Boolean) -> Unit = {},
     onProfilesClick: () -> Unit = {},
 ) {
@@ -228,6 +230,12 @@ private fun SettingUi(
                         subtitle = stringResource(R.string.setting_auto_confirm_subtitle),
                         checked = uiState.autoConfirmExternalInstall,
                         onCheckedChange = onAutoConfirmExternalInstallChanged,
+                    )
+                    SwitchPreference(
+                        title = stringResource(R.string.setting_show_download_tab_title),
+                        subtitle = stringResource(R.string.setting_show_download_tab_subtitle),
+                        checked = uiState.showDownloadTab,
+                        onCheckedChange = onShowDownloadTabChanged,
                     )
 
                     HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), thickness = 0.5.dp)

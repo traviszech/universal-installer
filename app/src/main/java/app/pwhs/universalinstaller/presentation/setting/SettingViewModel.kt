@@ -99,6 +99,9 @@ object PreferencesKeys {
      */
     val AUTO_CONFIRM_EXTERNAL_INSTALL = booleanPreferencesKey("auto_confirm_external_install")
 
+    /** Whether to show the "Download" tab in the source picker on the main screen. */
+    val SHOW_DOWNLOAD_TAB = booleanPreferencesKey("show_download_tab")
+
     /**
      * When true (default), external VIEW/SEND intents land in DialogInstallActivity instead
      * of the full InstallActivity — i.e. opening an APK from a file manager pops up a focused
@@ -193,6 +196,7 @@ data class SettingUiState(
     val biometricLockUninstall: Boolean = false,
     val dialogInstallMode: Boolean = true,
     val autoConfirmExternalInstall: Boolean = false,
+    val showDownloadTab: Boolean = true,
     val extractorOutputPath: String = "",
     val extractorFilenameTemplate: String = "{name}-{version}",
     val installerProfiles: List<InstallerProfile> = emptyList(),
@@ -380,9 +384,16 @@ class SettingViewModel(
 
     fun setAutoConfirmExternalInstall(enabled: Boolean) {
         viewModelScope.launch {
-            dataStore.edit { prefs -> prefs[PreferencesKeys.AUTO_CONFIRM_EXTERNAL_INSTALL] = enabled }
+            dataStore.edit { it[PreferencesKeys.AUTO_CONFIRM_EXTERNAL_INSTALL] = enabled }
         }
     }
+
+    fun setShowDownloadTab(enabled: Boolean) {
+        viewModelScope.launch {
+            dataStore.edit { it[PreferencesKeys.SHOW_DOWNLOAD_TAB] = enabled }
+        }
+    }
+
 
     fun setShizukuOption(key: Preferences.Key<Boolean>, value: Boolean) {
         viewModelScope.launch {
@@ -628,11 +639,12 @@ class SettingViewModel(
                     (prefs[PreferencesKeys.BIOMETRIC_LOCK_UNINSTALL] ?: false)
         },
         dataStore.data.map { prefs ->
-            // Trio: dialog-mode, auto-open-after-install, and auto-confirm-external-install
-            Triple(
+            // Flags: dialog-mode, auto-open, auto-confirm, and show-download-tab
+            listOf(
                 prefs[PreferencesKeys.DIALOG_INSTALL_MODE] ?: true,
                 prefs[PreferencesKeys.AUTO_OPEN_AFTER_INSTALL] ?: false,
-                prefs[PreferencesKeys.AUTO_CONFIRM_EXTERNAL_INSTALL] ?: false
+                prefs[PreferencesKeys.AUTO_CONFIRM_EXTERNAL_INSTALL] ?: false,
+                prefs[PreferencesKeys.SHOW_DOWNLOAD_TAB] ?: true
             )
         },
         dataStore.data.map { prefs ->
@@ -662,10 +674,11 @@ class SettingViewModel(
         @Suppress("UNCHECKED_CAST")
         val biometricFlags = flows[12] as Pair<Boolean, Boolean>
         @Suppress("UNCHECKED_CAST")
-        val tripleFlags = flows[13] as Triple<Boolean, Boolean, Boolean>
-        val dialogMode = tripleFlags.first
-        val autoOpen = tripleFlags.second
-        val autoConfirm = tripleFlags.third
+        val interfaceFlags = flows[13] as List<Boolean>
+        val dialogMode = interfaceFlags[0]
+        val autoOpen = interfaceFlags[1]
+        val autoConfirm = interfaceFlags[2]
+        val showDownload = interfaceFlags[3]
         @Suppress("UNCHECKED_CAST")
         val extractorAndProfiles = flows[14] as List<String>
         val extractorPath = extractorAndProfiles[0]
@@ -710,6 +723,7 @@ class SettingViewModel(
                 .BiometricGate.canAuthenticate(application),
             dialogInstallMode = dialogMode,
             autoConfirmExternalInstall = autoConfirm,
+            showDownloadTab = showDownload,
             extractorOutputPath = extractorPath,
             extractorFilenameTemplate = extractorTemplate,
             installerProfiles = ProfileManager.parseProfiles(profilesJson),
