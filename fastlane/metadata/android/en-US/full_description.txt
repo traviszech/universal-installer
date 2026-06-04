@@ -1,84 +1,65 @@
-Universal Installer is a modern Android package manager that handles what the default installer can't — split APKs, bundled archives with OBB data, silent installs, and downloads from URLs. All wrapped in a premium, expressive Material 3 UI with bouncy spring animations.
+Universal Installer is the ultimate Android package manager and Split APK Installer designed to handle what the system can't. Sideload split APKs, bundled archives with OBB data, and perform silent installs with ease. A premium package installer with a modern Material 3 UI.
 
 Expressive & Customizable
-- Fluid animations — Living dialogs that resize smoothly using bouncy spring physics (inspired by InstallerX-Revived).
-- Brand identity — High-contrast Orange theme as default for a professional look.
-- Installer Profiles — Save your favorite combinations of install flags, spoofed installers, and target users into reusable profiles.
+- Fluid animations: Living dialogs with bouncy spring physics (inspired by InstallerX-Revived).
+- Brand identity: High-contrast Orange theme default for a professional, premium look.
+- Installer Profiles: Save and reuse combinations of install flags, spoofed installers, and target users.
 
 Supported Formats
-
-- APK — Standard Android packages
-- APKS — Split APK bundles
-- XAPK — Compressed split bundles (APKPure format) with OBB
-- APKM — Split bundles (APKMirror format)
+- APK: Standard Android packages
+- APK+: Advanced split bundles (APK+ format)
+- APKS: Split APK bundles
+- XAPK: Compressed split bundles with OBB (APKPure format)
+- APKM: Split bundles (APKMirror format)
 
 Install From Anywhere
-
-- Local file picker — Three modes: auto-scan device storage, browse packages only, or browse all files
-- Remote download — Paste a URL; the package lands in Download/UniversalInstaller/ with its real filename, visible in any file manager
-- Download history — Re-install from history, copy source URLs, manage files without digging through file managers
-- Chrome / Gmail / Telegram integration — Open downloaded APKs from any source, even when the URL has no extension
+- Local file picker: Auto-scan storage, browse packages, or full file browser modes.
+- Remote download: Paste a URL; the package lands in Download/UniversalInstaller/ with its real filename.
+- Download history: Re-install, copy source URLs, and manage files without digging through folders.
+- App integration: Open APKs from Chrome, Gmail, or Telegram even when URLs lack extensions.
 
 Preview Before Installing
-See app name, icon, version, package, file size, min/target SDK, supported CPU architectures, languages, permissions, split count, and OBB count — all before you commit.
+See app name, icon, version, package, size, SDK targets, CPU architectures, languages, permissions, split count, and OBB count — all before you commit.
 
 OBB Support
-
-- Bundled OBBs inside XAPK/APKM are detected and copied automatically to Android/obb/
-- Standalone .obb files can be attached to any APK via the preview sheet (great for apps split across multiple sources)
-- Runs as a foreground worker with progress notification — keeps copying even if you leave the app
-- Smart fallback: direct I/O → Shizuku → SAF (per-package folder grant)
+- Bundled OBBs inside XAPK/APKM are detected and copied automatically to Android/obb/.
+- Manual Attachment: Attach standalone .obb files to any APK via the preview sheet.
+- Foreground Worker: Keeps copying even if you leave the app, with progress notifications.
+- Smart fallback: Uses direct I/O, Shizuku, or SAF (per-package folder grant) as needed.
 
 Root & Shizuku Power User Features
-With Root access or Shizuku enabled:
+- Targeted User Installs: Install apps to specific profiles (Work, Island, etc.) or all users at once.
+- Silent Operations: Install or uninstall without system confirmation prompts.
+- Advanced flags: Replace existing, allow downgrade, grant all permissions, bypass low target SDK blocks.
+- Set Install Source: Spoof the installer package name so apps accept your sideload as a "Play Store" install.
 
-- Installer Profiles — Save and reuse custom install configurations (spoofing, flags, user targets) per app or globally.
-- Targeted User Installs — Install apps to specific profiles (Work profile, Island, etc.) or all users at once.
-- Silent install / uninstall — No system confirmation prompts.
-- Advanced flags — Replace existing, allow downgrade, grant all permissions, allow test packages, bypass low target SDK block.
-- Set Install Source — Spoof the installer package name so apps with "installed from Play Store" checks accept your sideload.
-
-App Manager
-
-- Full list with APK size, install date, last-used time
-- Sort by Name / Size / Installed / Last used — ascending or descending
-- Batch select via long-press
-- Filter FAB for quick sort/filter; long-press FAB to scroll to top
-- Uninstall logs with success/failure reason
+App Manager & Extractor
+- Full list with APK size, install date, and last-used time.
+- APK Backup: Extract and backup apps to your storage.
+- Flexible Sorting: Name, Size, Date, or Usage (ascending/descending).
+- Batch Operations: Select multiple packages via long-press for batch uninstall.
+- Quick Filter: FAB for rapid sorting; long-press to scroll to top.
+- Uninstall logs: Track success or failure reasons for every operation.
 
 Sync & Share (LAN File Server)
+- Built-in HTTP server: Share and manage packages across local Wi-Fi.
+- Web Dashboard: Download APKs to PC or upload new ones directly to your phone.
+- Real-time tracking: Monitor download progress and transfers directly in the app.
+- PIN protection: Secure your file sharing sessions from unauthorized access.
 
-- Built-in HTTP server to share and manage your packages across a local network (Wi-Fi)
-- Beautiful web dashboard to download APKs to PC or upload new ones directly to your phone
-- Real-time download progress and transfer tracking directly in the app
-- Optional PIN protection to secure your file sharing sessions
-
-Security
-
-- VirusTotal hash lookup runs automatically on every picked file
-- Optional full upload + multi-engine scan for unknown files (up to 650 MB)
-- Clear verdict with malicious / suspicious / harmless / undetected engine counts
+Security & Privacy
+- VirusTotal: Automatic hash lookup for every file; optional full upload for unknown files (up to 650 MB).
+- Clear Verdicts: See malicious, suspicious, and harmless engine counts at a glance.
+- Offline First: No internet required for core functionality.
+- No Ads/Tracking: Fully open source with no data collection or analytics.
 
 Device Utilities
-
-- Storage card on the Install screen — free / total space at a glance
-- Install history with per-app success/failure and error reasons
-- Progress notifications for downloads, installs, and OBB copy
-
-Other
-
-- Expressive UI — Bouncy spring animations and fluid dialogs (inspired by InstallerX-Revived).
-- Brand Identity — Sleek default Orange theme for a premium look (Dynamic Color still available).
-- Multi-language — Arabic, German, Greek, English, Spanish, French, Hindi, Indonesian, Italian, Japanese, Korean, Portuguese (BR), Russian, Turkish, Ukrainian, Vietnamese, Chinese.
-
-Privacy
-
-- No internet required for core functionality
-- VirusTotal scanning is optional and uses your own API key
-- No ads, no tracking, no data collection
-- Fully open source — inspect the code yourself
+- Storage Overview: Free and total space visible on the Install screen.
+- Install History: Detailed logs with success/failure and error reasons.
+- Progress Notifications: Stay informed during downloads, installs, and OBB copying.
+- Multi-language: Support for Arabic, German, Greek, English, Spanish, French, Hindi, Indonesian, Italian, Japanese, Korean, Portuguese (BR), Russian, Turkish, Ukrainian, Vietnamese, and Chinese.
 
 Website: https://universal-installer.pwhs.app  
-Privacy: https://universal-installer.pwhs.app/privacy  
-Terms: https://universal-installer.pwhs.app/terms  
+Privacy: https://universal-installer.pwhs.app/privacy
+Terms: https://universal-installer.pwhs.app/terms
 Source code: https://github.com/pass-with-high-score/universal-installer
