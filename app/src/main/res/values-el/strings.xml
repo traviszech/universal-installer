@@ -293,7 +293,6 @@
     <string name="logs_delete_entry_cd">Διαγραφή καταχώρισης</string>
     <string name="setting_title">Ρυθμίσεις</string>
     <string name="setting_section_installation">Εγκατάσταση</string>
-    <string name="setting_shizuku_backend">Backend Shizuku</string>
     <string name="setting_shizuku_not_installed">Το Shizuku δεν είναι εγκατεστημένο</string>
     <string name="setting_shizuku_not_running">Το Shizuku είναι εγκατεστημένο αλλά δεν εκτελείται</string>
     <string name="setting_shizuku_unsupported">Η έκδοση Shizuku είναι πολύ παλιά (πριν την v11)</string>
@@ -505,7 +504,7 @@
     <string name="setting_auto_confirm_title">Αυτόματη επιβεβαίωση εξωτερικών εγκαταστάσεων</string>
     <string name="setting_auto_confirm_subtitle">Παράλειψη του διαλόγου επιβεβαίωσης όταν ένα APK ανοίγει από άλλη εφαρμογή</string>
     <string name="setting_default_installer_title">Ορισμός ως προεπιλεγμένου προγράμματος εγκατάστασης</string>
-    <string name="setting_default_installer_subtitle">\"Απενεργοποιήστε το πρόγραμμα εγκατάστασης συστήματος για να χρησιμοποιείτε πάντα το Universal Installer για αρχεία APK (απαιτεί Σχίζουκου ή Root)\"</string>
+    <string name="setting_default_installer_subtitle">\&quot;Απενεργοποιήστε το πρόγραμμα εγκατάστασης συστήματος για να χρησιμοποιείτε πάντα το Universal Installer για αρχεία APK (απαιτεί Σχίζουκου ή Root)\&quot;</string>
     <string name="setting_default_installer_needs_backend">Ενεργοποιήστε πρώτα το Shizuku ή το Root για να αλλάξετε το προεπιλεγμένο πρόγραμμα εγκατάστασης</string>
     <string name="setting_default_installer_enabled">Το Universal Installer είναι τώρα το προεπιλεγμένο</string>
     <string name="setting_default_installer_disabled">Το πρόγραμμα εγκατάστασης συστήματος αποκαταστάθηκε</string>
@@ -524,7 +523,7 @@
     <string name="setting_profiles_title">Προφίλ</string>
     <string name="setting_profiles_subtitle">Αποθήκευση και επαναχρησιμοποίηση ρυθμίσεων εγκατάστασης</string>
     <string name="profile_list_title">Προφίλ προγράμματος εγκατάστασης</string>
-    <string name="profile_empty_state">\"Δεν έχουν δημιουργηθεί προφίλ ακόμα. Χρησιμοποιήστε προφίλ για να αποθηκεύσετε συγκεκριμένα πακέτα εγκατάστασης</string>
+    <string name="profile_empty_state">\&quot;Δεν έχουν δημιουργηθεί προφίλ ακόμα. Χρησιμοποιήστε προφίλ για να αποθηκεύσετε συγκεκριμένα πακέτα εγκατάστασης</string>
     <string name="profile_add_button">Προσθήκη προφίλ</string>
     <string name="profile_edit_title">Επεξεργασία προφίλ</string>
     <string name="profile_create_title">Δημιουργία προφίλ</string>
@@ -539,4 +538,19 @@
     <string name="install_profile_none">Κανένα (Χρήση καθολικών ρυθμίσεων)</string>
     <string name="profile_mapping_header">Αυτόματη εφαρμογή για αυτήν την εφαρμογή</string>
     <string name="profile_mapping_desc">Χρησιμοποιείτε πάντα αυτό το προφίλ κατά την εγκατάσταση αυτού του πακέτου.</string>
+    <string name="install_targeted_no_backend">Για εγκατάσταση σε συγκεκριμένο προφίλ, ενεργοποιήστε το Shizuku ή το Root στις Ρυθμίσεις</string>
+    <string name="install_notif_channel_name">Πρόοδος εγκατάστασης</string>
+    <string name="install_notif_channel_description">Εμφανίζει την πρόοδο εγκατάστασης και τα αποτελέσματα για εφαρμογές που εγκαταστάθηκαν στο παρασκήνιο</string>
+    <string name="install_notif_progress_title_single">Εγκατάσταση του %1$s</string>
+    <string name="install_notif_progress_title_multi">Εγκατάσταση %1$d εφαρμογών</string>
+    <string name="install_notif_progress_text">%1$d%%</string>
+    <string name="install_notif_result_success_title">Εγκαταστάθηκε</string>
+    <string name="install_notif_result_failed_title">Η εγκατάσταση απέτυχε</string>
+    <string name="setting_install_mode_title">Λειτουργία εγκατάστασης</string>
+    <string name="setting_install_mode_default">Προεπιλογή</string>
+    <string name="setting_install_mode_shizuku">Shizuku</string>
+    <string name="setting_install_mode_root">Root</string>
+    <string name="setting_install_mode_default_sub">Πρόγραμμα εγκατάστασης συστήματος (εμφανίζει παράθυρο επιβεβαίωσης)</string>
+    <string name="setting_show_download_tab_title">Εμφάνιση καρτέλας λήψης</string>
+    <string name="setting_show_download_tab_subtitle">Εμφάνιση της καρτέλας Λήψη στην κύρια οθόνη για απομακρυσμένες εγκαταστάσεις APK</string>
 </resources>

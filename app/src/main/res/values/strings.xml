@@ -309,7 +309,6 @@
     <string name="logs_delete_entry_cd">Delete entry</string>
     <string name="setting_title">Settings</string>
     <string name="setting_section_installation">Installation</string>
-    <string name="setting_shizuku_backend">Shizuku Backend</string>
     <string name="setting_install_mode_title">Install mode</string>
     <string name="setting_install_mode_default">Default</string>
     <string name="setting_install_mode_shizuku">Shizuku</string>
@@ -331,7 +330,6 @@
     <string name="setting_show_download_tab_title">Show Download Tab</string>
     <string name="setting_show_download_tab_subtitle">Show the Download tab on the main screen for remote APK installs</string>
     <string name="setting_default_installer_title">Set as default installer</string>
-
     <string name="setting_default_installer_subtitle">Disable system installer to always use Universal Installer for APK files (requires Shizuku or Root)</string>
     <string name="setting_default_installer_needs_backend">Enable Shizuku or Root first to change the default installer</string>
     <string name="setting_default_installer_enabled">Universal Installer is now the default</string>

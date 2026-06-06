@@ -301,7 +301,6 @@
     <string name="logs_delete_entry_cd">Șterge intrarea</string>
     <string name="setting_title">Setări</string>
     <string name="setting_section_installation">Instalare</string>
-    <string name="setting_shizuku_backend">Backend Shizuku</string>
     <string name="setting_shizuku_not_installed">Shizuku nu este instalat</string>
     <string name="setting_shizuku_not_running">Shizuku este instalat dar nu rulează</string>
     <string name="setting_shizuku_unsupported">Versiunea Shizuku este prea veche (pre-v11)</string>
@@ -563,4 +562,19 @@
     <string name="install_profile_none">Niciunul (Folosește setările globale)</string>
     <string name="profile_mapping_header">Aplică automat pentru această aplicație</string>
     <string name="profile_mapping_desc">Folosește întotdeauna acest profil când instalezi acest pachet.</string>
+    <string name="install_targeted_no_backend">Pentru a instala într-un profil specific, activați Shizuku sau Root în Setări</string>
+    <string name="install_notif_channel_name">Progres instalare</string>
+    <string name="install_notif_channel_description">Afișează progresul instalării și rezultatele pentru aplicațiile instalate în fundal</string>
+    <string name="install_notif_progress_title_single">Se instalează %1$s</string>
+    <string name="install_notif_progress_title_multi">Se instalează %1$d aplicații</string>
+    <string name="install_notif_progress_text">%1$d%%</string>
+    <string name="install_notif_result_success_title">Instalat</string>
+    <string name="install_notif_result_failed_title">Instalarea a eșuat</string>
+    <string name="setting_install_mode_title">Mod de instalare</string>
+    <string name="setting_install_mode_default">Implicit</string>
+    <string name="setting_install_mode_shizuku">Shizuku</string>
+    <string name="setting_install_mode_root">Root</string>
+    <string name="setting_install_mode_default_sub">Instalator de sistem (afișează dialog de confirmare)</string>
+    <string name="setting_show_download_tab_title">Afișează fila de descărcare</string>
+    <string name="setting_show_download_tab_subtitle">Afișează fila de descărcare pe ecranul principal pentru instalări APK la distanță</string>
 </resources>

@@ -71,7 +71,6 @@
     <string name="logs_delete_entry_cd">प्रविष्टि हटाएं</string>
     <string name="setting_title">सेटिंग्स</string>
     <string name="setting_section_installation">इंस्टॉलेशन</string>
-    <string name="setting_shizuku_backend">Shizuku Backend</string>
     <string name="setting_shizuku_not_installed">Shizuku इंस्टॉल नहीं है</string>
     <string name="setting_shizuku_not_running">Shizuku इंस्टॉल है लेकिन चल नहीं रहा है</string>
     <string name="setting_shizuku_unsupported">Shizuku वर्ज़न बहुत पुराना है (pre-v11)</string>
@@ -524,7 +523,7 @@
     <string name="setting_profiles_title">प्रोफाइल</string>
     <string name="setting_profiles_subtitle">इंस्टॉल कॉन्फ़िگرेशन सहेजें और पुनः उपयोग करें</string>
     <string name="profile_list_title">इंस्टॉलर प्रोफाइल</string>
-    <string name="profile_empty_state">\"अभी तक कोई प्रोफाइल नहीं बनाई गई है। विशिष्ट इंस्टॉलर पैकेज</string>
+    <string name="profile_empty_state">\&quot;अभी तक कोई प्रोफाइल नहीं बनाई गई है। विशिष्ट इंस्टॉलर पैकेज</string>
     <string name="profile_add_button">प्रोफाइल जोड़ें</string>
     <string name="profile_edit_title">प्रोफाइल संपादित करें</string>
     <string name="profile_create_title">प्रोफाइल बनाएं</string>
@@ -539,4 +538,19 @@
     <string name="install_profile_none">कोई नहीं (ग्लोबल सेटिंग्स का उपयोग करें)</string>
     <string name="profile_mapping_header">इस ऐप के लिए स्वतः लागू करें</string>
     <string name="profile_mapping_desc">इस पैकेज को इंस्टॉल करते समय हमेशा इस प्रोफाइल का उपयोग करें।</string>
+    <string name="install_targeted_no_backend">किसी विशिष्ट प्रोफ़ाइल में इंस्टॉल करने के लिए, सेटिंग में Shizuku या Root को सक्षम करें</string>
+    <string name="install_notif_channel_name">इंस्टॉल की प्रगति</string>
+    <string name="install_notif_channel_description">पृष्ठभूमि में इंस्टॉल किए गए ऐप्स के लिए इंस्टॉल प्रगति और परिणाम दिखाता है</string>
+    <string name="install_notif_progress_title_single">%1$s इंस्टॉल हो रहा है</string>
+    <string name="install_notif_progress_title_multi">%1$d ऐप्स इंस्टॉल हो रहे हैं</string>
+    <string name="install_notif_progress_text">%1$d%%</string>
+    <string name="install_notif_result_success_title">इंस्टॉल हो गया</string>
+    <string name="install_notif_result_failed_title">इंस्टॉल विफल रहा</string>
+    <string name="setting_install_mode_title">इंस्टॉल मोड</string>
+    <string name="setting_install_mode_default">डिफ़ॉल्ट</string>
+    <string name="setting_install_mode_shizuku">Shizuku</string>
+    <string name="setting_install_mode_root">Root</string>
+    <string name="setting_install_mode_default_sub">सिस्टम इंस्टॉलर (पुष्टि संवाद दिखाता है)</string>
+    <string name="setting_show_download_tab_title">डाउनलोड टैब दिखाएं</string>
+    <string name="setting_show_download_tab_subtitle">रिमोट APK इंस्टॉलेशन के लिए मुख्य स्क्रीन पर डाउनलोड टैब दिखाएं</string>
 </resources>

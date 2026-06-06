@@ -71,7 +71,6 @@
     <string name="logs_delete_entry_cd">Supprimer l\'entrée</string>
     <string name="setting_title">Paramètres</string>
     <string name="setting_section_installation">Installation</string>
-    <string name="setting_shizuku_backend">Backend Shizuku</string>
     <string name="setting_shizuku_not_installed">Shizuku non installé</string>
     <string name="setting_shizuku_not_running">Shizuku installé mais ne fonctionne pas</string>
     <string name="setting_shizuku_unsupported">Version de Shizuku trop ancienne (pré-v11)</string>
@@ -524,7 +523,7 @@
     <string name="setting_profiles_title">Profils</string>
     <string name="setting_profiles_subtitle">Enregistrer et réutiliser les configurations d\'installation</string>
     <string name="profile_list_title">Profils d\'installateur</string>
-    <string name="profile_empty_state">\"Aucun profil créé pour le moment. Utilisez les profils pour enregistrer des paquets d\'installateur</string>
+    <string name="profile_empty_state">\&quot;Aucun profil créé pour le moment. Utilisez les profils pour enregistrer des paquets d\'installateur</string>
     <string name="profile_add_button">Ajouter un profil</string>
     <string name="profile_edit_title">Modifier le profil</string>
     <string name="profile_create_title">Créer un profil</string>
@@ -539,4 +538,19 @@
     <string name="install_profile_none">Aucun (Utiliser les paramètres globaux)</string>
     <string name="profile_mapping_header">Application automatique pour cette application</string>
     <string name="profile_mapping_desc">Toujours utiliser ce profil lors de l\'installation de ce paquet.</string>
+    <string name="install_targeted_no_backend">Pour installer dans un profil spécifique, activez Shizuku ou Root dans les Paramètres</string>
+    <string name="install_notif_channel_name">Progression de l\'installation</string>
+    <string name="install_notif_channel_description">Affiche la progression de l\'installation et les résultats pour les applications installées en arrière-plan</string>
+    <string name="install_notif_progress_title_single">Installation de %1$s</string>
+    <string name="install_notif_progress_title_multi">Installation de %1$d applications</string>
+    <string name="install_notif_progress_text">%1$d%%</string>
+    <string name="install_notif_result_success_title">Installé</string>
+    <string name="install_notif_result_failed_title">Échec de l\'installation</string>
+    <string name="setting_install_mode_title">Mode d\'installation</string>
+    <string name="setting_install_mode_default">Par défaut</string>
+    <string name="setting_install_mode_shizuku">Shizuku</string>
+    <string name="setting_install_mode_root">Root</string>
+    <string name="setting_install_mode_default_sub">Installateur système (affiche une boîte de dialogue de confirmation)</string>
+    <string name="setting_show_download_tab_title">Afficher l\'onglet Téléchargement</string>
+    <string name="setting_show_download_tab_subtitle">Afficher l\'onglet Téléchargement sur l\'écran principal pour les installations d\'APK à distance</string>
 </resources>

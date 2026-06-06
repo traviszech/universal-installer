@@ -71,7 +71,6 @@
     <string name="logs_delete_entry_cd">删除条目</string>
     <string name="setting_title">设置</string>
     <string name="setting_section_installation">安装</string>
-    <string name="setting_shizuku_backend">Shizuku 后端</string>
     <string name="setting_shizuku_not_installed">未安装 Shizuku</string>
     <string name="setting_shizuku_not_running">Shizuku 已安装但未运行</string>
     <string name="setting_shizuku_unsupported">Shizuku 版本过旧（低于 v11）</string>
@@ -524,7 +523,7 @@
     <string name="setting_profiles_title">配置文件</string>
     <string name="setting_profiles_subtitle">保存并重复使用安装配置</string>
     <string name="profile_list_title">安装程序配置文件</string>
-    <string name="profile_empty_state">\"尚未创建配置文件。使用配置文件来保存特定的安装程序包、后端或标志组合。\"</string>
+    <string name="profile_empty_state">\&quot;尚未创建配置文件。使用配置文件来保存特定的安装程序包、后端或标志组合。\&quot;</string>
     <string name="profile_add_button">添加配置文件</string>
     <string name="profile_edit_title">编辑配置文件</string>
     <string name="profile_create_title">创建配置文件</string>
@@ -539,4 +538,19 @@
     <string name="install_profile_none">无（使用全局设置）</string>
     <string name="profile_mapping_header">为此应用自动应用</string>
     <string name="profile_mapping_desc">安装此包时始终使用此配置文件。</string>
+    <string name="install_targeted_no_backend">要安装到特定配置文件，请在设置中启用 Shizuku 或 Root</string>
+    <string name="install_notif_channel_name">安装进度</string>
+    <string name="install_notif_channel_description">显示后台安装应用程序的安装进度和结果</string>
+    <string name="install_notif_progress_title_single">正在安装 %1$s</string>
+    <string name="install_notif_progress_title_multi">正在安装 %1$d 个应用</string>
+    <string name="install_notif_progress_text">%1$d%%</string>
+    <string name="install_notif_result_success_title">已安装</string>
+    <string name="install_notif_result_failed_title">安装失败</string>
+    <string name="setting_install_mode_title">安装模式</string>
+    <string name="setting_install_mode_default">默认</string>
+    <string name="setting_install_mode_shizuku">Shizuku</string>
+    <string name="setting_install_mode_root">Root</string>
+    <string name="setting_install_mode_default_sub">系统安装程序（显示确认对话框）</string>
+    <string name="setting_show_download_tab_title">显示下载选项卡</string>
+    <string name="setting_show_download_tab_subtitle">在主屏幕上显示远程 APK 安装的下载选项卡</string>
 </resources>

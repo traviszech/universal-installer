@@ -22,8 +22,20 @@ function importTranslations(csvPath, resDir) {
         const line = lines[i].trim();
         if (!line) continue;
         
-        // Simple CSV parser (doesn't handle commas in quotes, but enough for this use case)
-        const parts = line.split(',');
+        const parts = [];
+        let current = '';
+        let inQuotes = false;
+        for (let char of line) {
+            if (char === '"') inQuotes = !inQuotes;
+            else if (char === ',' && !inQuotes) {
+                parts.push(current);
+                current = '';
+            } else {
+                current += char;
+            }
+        }
+        parts.push(current);
+        
         const locale = parts[localeIdx];
         const name = parts[nameIdx];
         const value = parts[transIdx];

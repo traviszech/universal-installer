@@ -71,7 +71,6 @@
     <string name="logs_delete_entry_cd">Kaydı sil</string>
     <string name="setting_title">Ayarlar</string>
     <string name="setting_section_installation">Yükleme</string>
-    <string name="setting_shizuku_backend">Shizuku Backend</string>
     <string name="setting_shizuku_not_installed">Shizuku yüklü değil</string>
     <string name="setting_shizuku_not_running">Shizuku yüklü ama çalışmıyor</string>
     <string name="setting_shizuku_unsupported">Shizuku sürümü çok eski (v11 öncesi)</string>
@@ -524,7 +523,7 @@
     <string name="setting_profiles_title">Profiller</string>
     <string name="setting_profiles_subtitle">Kurulum yapılandırmalarını kaydedin ve yeniden kullanın</string>
     <string name="profile_list_title">Yükleyici Profilleri</string>
-    <string name="profile_empty_state">\"Henüz profil oluşturulmadı. Belirli yükleyici paketlerini</string>
+    <string name="profile_empty_state">\&quot;Henüz profil oluşturulmadı. Belirli yükleyici paketlerini</string>
     <string name="profile_add_button">Profil Ekle</string>
     <string name="profile_edit_title">Profili Düzenle</string>
     <string name="profile_create_title">Profil Oluştur</string>
@@ -539,4 +538,19 @@
     <string name="install_profile_none">Hiçbiri (Global ayarları kullan)</string>
     <string name="profile_mapping_header">Bu uygulama için otomatik uygula</string>
     <string name="profile_mapping_desc">Bu paketi yüklerken her zaman bu profili kullan.</string>
+    <string name="install_targeted_no_backend">Belirli bir profile yüklemek için Ayarlar\'da Shizuku veya Root\'u etkinleştirin</string>
+    <string name="install_notif_channel_name">Yükleme ilerlemesi</string>
+    <string name="install_notif_channel_description">Arka planda yüklenen uygulamaların yükleme ilerlemesini ve sonuçlarını gösterir</string>
+    <string name="install_notif_progress_title_single">%1$s yükleniyor</string>
+    <string name="install_notif_progress_title_multi">%1$d uygulama yükleniyor</string>
+    <string name="install_notif_progress_text">%1$d%%</string>
+    <string name="install_notif_result_success_title">Yüklendi</string>
+    <string name="install_notif_result_failed_title">Yükleme başarısız oldu</string>
+    <string name="setting_install_mode_title">Yükleme modu</string>
+    <string name="setting_install_mode_default">Varsayılan</string>
+    <string name="setting_install_mode_shizuku">Shizuku</string>
+    <string name="setting_install_mode_root">Root</string>
+    <string name="setting_install_mode_default_sub">Sistem yükleyici (onay iletişim kutusunu gösterir)</string>
+    <string name="setting_show_download_tab_title">İndirme Sekmesini Göster</string>
+    <string name="setting_show_download_tab_subtitle">Uzak APK yüklemeleri için ana ekranda İndirme sekmesini göster</string>
 </resources>

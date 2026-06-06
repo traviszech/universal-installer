@@ -71,7 +71,6 @@
     <string name="logs_delete_entry_cd">Eliminar entrada</string>
     <string name="setting_title">Configuración</string>
     <string name="setting_section_installation">Instalación</string>
-    <string name="setting_shizuku_backend">Backend de Shizuku</string>
     <string name="setting_shizuku_not_installed">Shizuku no está instalado</string>
     <string name="setting_shizuku_not_running">Shizuku está instalado pero no se está ejecutando</string>
     <string name="setting_shizuku_unsupported">La versión de Shizuku es demasiado antigua (anterior a la v11)</string>
@@ -505,7 +504,7 @@
     <string name="setting_auto_confirm_title">Confirmar automáticamente instalaciones externas</string>
     <string name="setting_auto_confirm_subtitle">Omitir el diálogo de confirmación cuando se abre un APK desde otra aplicación</string>
     <string name="setting_default_installer_title">Establecer como instalador predeterminado</string>
-    <string name="setting_default_installer_subtitle">\"Desactiva el instalador del sistema para usar siempre Universal Installer para archivos APK (requiere Shizuku o Root)\"</string>
+    <string name="setting_default_installer_subtitle">\&quot;Desactiva el instalador del sistema para usar siempre Universal Installer para archivos APK (requiere Shizuku o Root)\&quot;</string>
     <string name="setting_default_installer_needs_backend">Habilita Shizuku o Root primero para cambiar el instalador predeterminado</string>
     <string name="setting_default_installer_enabled">Universal Installer es ahora el predeterminado</string>
     <string name="setting_default_installer_disabled">Instalador del sistema restaurado</string>
@@ -524,12 +523,12 @@
     <string name="setting_profiles_title">Perfiles</string>
     <string name="setting_profiles_subtitle">Guardar y reutilizar configuraciones de instalación</string>
     <string name="profile_list_title">Perfiles de instalador</string>
-    <string name="profile_empty_state">\"Aún no se han creado perfiles. Usa perfiles para guardar paquetes de instalador específicos</string>
+    <string name="profile_empty_state">\&quot;Aún no se han creado perfiles. Usa perfiles para guardar paquetes de instalador específicos</string>
     <string name="profile_add_button">Añadir perfil</string>
     <string name="profile_edit_title">Editar perfil</string>
     <string name="profile_create_title">Crear perfil</string>
     <string name="profile_name_label">Nombre del perfil</string>
-    <string name="profile_name_placeholder">\"p. ej.</string>
+    <string name="profile_name_placeholder">\&quot;p. ej.</string>
     <string name="profile_delete_confirm_title">¿Eliminar perfil?</string>
     <string name="profile_delete_confirm_msg">Esto también eliminará cualquier asignación automática para este perfil.</string>
     <string name="profile_save">Guardar</string>
@@ -539,4 +538,19 @@
     <string name="install_profile_none">Ninguno (usar configuración global)</string>
     <string name="profile_mapping_header">Aplicar automáticamente para esta aplicación</string>
     <string name="profile_mapping_desc">Usar siempre este perfil al instalar este paquete.</string>
+    <string name="install_targeted_no_backend">Para instalar en un perfil específico, habilite Shizuku o Root en Ajustes</string>
+    <string name="install_notif_channel_name">Progreso de instalación</string>
+    <string name="install_notif_channel_description">Muestra el progreso de instalación y los resultados de las aplicaciones instaladas en segundo plano</string>
+    <string name="install_notif_progress_title_single">Instalando %1$s</string>
+    <string name="install_notif_progress_title_multi">Instalando %1$d aplicaciones</string>
+    <string name="install_notif_progress_text">%1$d%%</string>
+    <string name="install_notif_result_success_title">Instalado</string>
+    <string name="install_notif_result_failed_title">Error al instalar</string>
+    <string name="setting_install_mode_title">Modo de instalación</string>
+    <string name="setting_install_mode_default">Predeterminado</string>
+    <string name="setting_install_mode_shizuku">Shizuku</string>
+    <string name="setting_install_mode_root">Root</string>
+    <string name="setting_install_mode_default_sub">Instalador del sistema (muestra cuadro de diálogo de confirmación)</string>
+    <string name="setting_show_download_tab_title">Mostrar pestaña de descargas</string>
+    <string name="setting_show_download_tab_subtitle">Mostrar la pestaña de descargas en la pantalla principal para instalaciones remotas de APK</string>
 </resources>

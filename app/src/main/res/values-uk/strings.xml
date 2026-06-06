@@ -294,7 +294,6 @@
     <string name="logs_delete_entry_cd">Видалити запис</string>
     <string name="setting_title">Налаштування</string>
     <string name="setting_section_installation">Встановлення</string>
-    <string name="setting_shizuku_backend">Бекенд Shizuku</string>
     <string name="setting_shizuku_not_installed">Shizuku не встановлено</string>
     <string name="setting_shizuku_not_running">Shizuku встановлено, але не працює</string>
     <string name="setting_shizuku_unsupported">Версія Shizuku занадто стара (до v11)</string>
@@ -524,7 +523,7 @@
     <string name="setting_profiles_title">Профілі</string>
     <string name="setting_profiles_subtitle">Зберігайте та повторно використовуйте конфігурації встановлення</string>
     <string name="profile_list_title">Профілі інсталятора</string>
-    <string name="profile_empty_state">\"Профілів ще не створено. Використовуйте профілі для збереження певних пакетів інсталятора</string>
+    <string name="profile_empty_state">\&quot;Профілів ще не створено. Використовуйте профілі для збереження певних пакетів інсталятора</string>
     <string name="profile_add_button">Додати профіль</string>
     <string name="profile_edit_title">Редагувати профіль</string>
     <string name="profile_create_title">Створити профіль</string>
@@ -539,4 +538,19 @@
     <string name="install_profile_none">Немає (Використовувати глобальні налаштування)</string>
     <string name="profile_mapping_header">Автозастосування для цієї програми</string>
     <string name="profile_mapping_desc">Завжди використовувати цей профіль під час встановлення цього пакета.</string>
+    <string name="install_targeted_no_backend">Щоб встановити в певний профіль, увімкніть Shizuku або Root у Налаштуваннях</string>
+    <string name="install_notif_channel_name">Прогрес встановлення</string>
+    <string name="install_notif_channel_description">Показує прогрес встановлення та результати для програм</string>
+    <string name="install_notif_progress_title_single">Встановлення %1$s</string>
+    <string name="install_notif_progress_title_multi">Встановлення %1$d програм</string>
+    <string name="install_notif_progress_text">%1$d%%</string>
+    <string name="install_notif_result_success_title">Встановлено</string>
+    <string name="install_notif_result_failed_title">Помилка встановлення</string>
+    <string name="setting_install_mode_title">Режим встановлення</string>
+    <string name="setting_install_mode_default">За замовчуванням</string>
+    <string name="setting_install_mode_shizuku">Shizuku</string>
+    <string name="setting_install_mode_root">Root</string>
+    <string name="setting_install_mode_default_sub">Системний інсталятор (показує діалогове вікно підтвердження)</string>
+    <string name="setting_show_download_tab_title">Показати вкладку завантаження</string>
+    <string name="setting_show_download_tab_subtitle">Показувати вкладку завантаження на головному екрані для віддаленого встановлення APK</string>
 </resources>

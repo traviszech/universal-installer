@@ -71,7 +71,6 @@
     <string name="logs_delete_entry_cd">Xóa mục</string>
     <string name="setting_title">Cài đặt</string>
     <string name="setting_section_installation">Cài đặt</string>
-    <string name="setting_shizuku_backend">Backend Shizuku</string>
     <string name="setting_shizuku_not_installed">Shizuku chưa được cài đặt</string>
     <string name="setting_shizuku_not_running">Shizuku đã được cài đặt nhưng không chạy</string>
     <string name="setting_shizuku_unsupported">Phiên bản Shizuku quá cũ (trước v11)</string>
@@ -524,7 +523,7 @@
     <string name="setting_profiles_title">Hồ sơ</string>
     <string name="setting_profiles_subtitle">Lưu và tái sử dụng các cấu hình cài đặt</string>
     <string name="profile_list_title">Hồ sơ trình cài đặt</string>
-    <string name="profile_empty_state">\"Chưa có hồ sơ nào được tạo. Sử dụng hồ sơ để lưu các gói trình cài đặt</string>
+    <string name="profile_empty_state">\&quot;Chưa có hồ sơ nào được tạo. Sử dụng hồ sơ để lưu các gói trình cài đặt</string>
     <string name="profile_add_button">Thêm hồ sơ</string>
     <string name="profile_edit_title">Chỉnh sửa hồ sơ</string>
     <string name="profile_create_title">Tạo hồ sơ</string>
@@ -539,4 +538,19 @@
     <string name="install_profile_none">Không có (Sử dụng cài đặt chung)</string>
     <string name="profile_mapping_header">Tự động áp dụng cho ứng dụng này</string>
     <string name="profile_mapping_desc">Luôn sử dụng hồ sơ này khi cài đặt gói này.</string>
+    <string name="install_targeted_no_backend">Để cài đặt vào một hồ sơ cụ thể, hãy bật Shizuku hoặc Root trong Cài đặt</string>
+    <string name="install_notif_channel_name">Tiến trình cài đặt</string>
+    <string name="install_notif_channel_description">Hiển thị tiến trình cài đặt và kết quả cho các ứng dụng được cài đặt ở chế độ nền</string>
+    <string name="install_notif_progress_title_single">Đang cài đặt %1$s</string>
+    <string name="install_notif_progress_title_multi">Đang cài đặt %1$d ứng dụng</string>
+    <string name="install_notif_progress_text">%1$d%%</string>
+    <string name="install_notif_result_success_title">Đã cài đặt</string>
+    <string name="install_notif_result_failed_title">Cài đặt thất bại</string>
+    <string name="setting_install_mode_title">Chế độ cài đặt</string>
+    <string name="setting_install_mode_default">Mặc định</string>
+    <string name="setting_install_mode_shizuku">Shizuku</string>
+    <string name="setting_install_mode_root">Root</string>
+    <string name="setting_install_mode_default_sub">Trình cài đặt hệ thống (hiển thị hộp thoại xác nhận)</string>
+    <string name="setting_show_download_tab_title">Hiển thị Tab Tải xuống</string>
+    <string name="setting_show_download_tab_subtitle">Hiển thị tab Tải xuống trên màn hình chính để cài đặt APK từ xa</string>
 </resources>
