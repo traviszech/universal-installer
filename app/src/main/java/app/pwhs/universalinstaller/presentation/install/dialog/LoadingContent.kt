@@ -25,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import app.pwhs.universalinstaller.ui.theme.Spacing
 
 /**
  * Skeleton placeholder rendered while we parse the APK. Mirrors the Prepare-stage
@@ -37,26 +38,26 @@ fun LoadingContent() {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 24.dp, vertical = 32.dp),
+            .padding(horizontal = Spacing.XL, vertical = Spacing.XXL),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         // Icon placeholder
         ShimmerBox(modifier = Modifier.size(64.dp), shape = RoundedCornerShape(16.dp))
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(Spacing.L))
         // Title line
         ShimmerBox(modifier = Modifier.width(180.dp).height(20.dp), shape = RoundedCornerShape(6.dp))
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(Spacing.S))
         // Subtitle line
         ShimmerBox(modifier = Modifier.width(140.dp).height(14.dp), shape = RoundedCornerShape(6.dp))
         Spacer(modifier = Modifier.height(20.dp))
         // Chip row (2 chips)
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
             ShimmerBox(modifier = Modifier.width(80.dp).height(28.dp), shape = RoundedCornerShape(14.dp))
             ShimmerBox(modifier = Modifier.width(64.dp).height(28.dp), shape = RoundedCornerShape(14.dp))
         }
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(Spacing.XL))
         // Button row
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
             ShimmerBox(modifier = Modifier.weight(1f).height(40.dp), shape = RoundedCornerShape(20.dp))
             ShimmerBox(modifier = Modifier.weight(1f).height(40.dp), shape = RoundedCornerShape(20.dp))
         }

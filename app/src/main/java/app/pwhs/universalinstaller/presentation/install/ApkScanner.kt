@@ -140,7 +140,7 @@ object ApkScanner {
             }
         }.getOrNull() ?: return file
 
-        val pkgName = archive.packageName ?: return file
+        val pkgName = archive.packageName
         val archiveCode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             archive.longVersionCode
         } else {

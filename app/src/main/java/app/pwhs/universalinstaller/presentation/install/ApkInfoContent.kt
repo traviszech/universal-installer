@@ -64,9 +64,12 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -117,8 +120,17 @@ internal fun ApkInfoContent(
     val currentMappingProfileId = appProfileMapping[apkInfo.packageName]
     var isExpanded by rememberSaveable { mutableStateOf(!startCompact) }
     
-    val iconBitmap = remember(apkInfo.icon) {
-        apkInfo.icon?.toBitmap(128, 128)?.asImageBitmap()
+    // Decode off the main thread — rasterizing the drawable into a 128px bitmap is
+    // non-trivial for adaptive icons and was running in composition, stalling the
+    // first frame of the dialog. produceState seeds null (shows the fallback glyph)
+    // and swaps in the real icon once the IO work completes.
+    val iconBitmap by produceState<androidx.compose.ui.graphics.ImageBitmap?>(
+        initialValue = null,
+        key1 = apkInfo.icon,
+    ) {
+        value = withContext(Dispatchers.IO) {
+            apkInfo.icon?.toBitmap(128, 128)?.asImageBitmap()
+        }
     }
 
     Column(
@@ -130,10 +142,12 @@ internal fun ApkInfoContent(
             .padding(bottom = 32.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
+        // Local copy so null-checks smart-cast (delegated produceState property can't).
+        val icon = iconBitmap
         if (isExpanded) {
-            if (iconBitmap != null) {
+            if (icon != null) {
                 Image(
-                    bitmap = iconBitmap,
+                    bitmap = icon,
                     contentDescription = apkInfo.appName,
                     modifier = Modifier.size(80.dp).clip(MaterialTheme.shapes.large),
                 )
@@ -167,9 +181,9 @@ internal fun ApkInfoContent(
                 modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                if (iconBitmap != null) {
+                if (icon != null) {
                     Image(
-                        bitmap = iconBitmap,
+                        bitmap = icon,
                         contentDescription = apkInfo.appName,
                         modifier = Modifier.size(48.dp).clip(MaterialTheme.shapes.medium),
                     )

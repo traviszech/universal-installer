@@ -28,7 +28,7 @@ import androidx.compose.material.icons.rounded.CheckBox
 import androidx.compose.material.icons.rounded.CheckBoxOutlineBlank
 import androidx.compose.material.icons.rounded.ErrorOutline
 import androidx.compose.material.icons.rounded.InstallMobile
-import androidx.compose.material.icons.rounded.MergeType
+import androidx.compose.material.icons.automirrored.rounded.MergeType
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Button
@@ -199,7 +199,7 @@ private fun ReadyBody(
                     label = { Text(stringResource(R.string.batch_install_merge_splits)) },
                     leadingIcon = {
                         Icon(
-                            imageVector = Icons.Rounded.MergeType,
+                            imageVector = Icons.AutoMirrored.Rounded.MergeType,
                             contentDescription = null,
                             modifier = Modifier.size(AssistChipDefaults.IconSize),
                         )

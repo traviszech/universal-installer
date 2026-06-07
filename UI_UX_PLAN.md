@@ -106,17 +106,18 @@ gives at least one recovery path.
 
 ## Phase 5 — Design system + perf (~1.5 days, foundation)
 
-- [ ] **5.1 Spacing tokens**
-  - Add `object Spacing { val XS=4.dp; S=8.dp; M=12.dp; L=16.dp; XL=24.dp }`
-    under `ui/theme/`. Migrate hard-coded `12.dp`/`20.dp` in dialog/* and
-    setting/* files. Don't churn — only places already audited.
-- [ ] **5.2 Async icon decode** — `ApkInfoContent.kt:120`
-  - `apkInfo.icon?.toBitmap(128, 128)` runs in composition. Move to
-    `produceState(initialValue = null) { … withContext(IO) { … } }` so first
-    composition doesn't block on the decode.
-- [ ] **5.3 Dialog icon LRU cache**
-  - Reusing the AppLock pattern: an object-scoped `LruCache<String, Bitmap>`
-    keyed on `iconPath` so re-opening a dialog for the same APK is instant.
+- [x] **5.1 Spacing tokens**
+  - Added `object Spacing { XS/S/M/L/XL/XXL }` under `ui/theme/`. Adopted
+    incrementally (LoadingContent first) — no big-bang migration; older files keep
+    literals until next touched. Values off the 4dp scale (e.g. 20dp) stay literal.
+- [x] **5.2 Async icon decode** — `ApkInfoContent.kt`
+  - `apkInfo.icon?.toBitmap(128,128)` moved out of composition into
+    `produceState(initial = null) { withContext(IO) { … } }`; fallback glyph shows
+    until the decode lands.
+- [x] **5.3 Dialog icon LRU cache**
+  - Added `DialogIconCache` (object-scoped byte-capped `LruCache<String, Bitmap>`
+    keyed on `iconPath`). `TargetIcon` now reads through it, so re-opening the
+    dialog for the same APK (e.g. Retry) is instant.
 
 ---
 
@@ -132,6 +133,10 @@ Sweep of compile-time warnings. Pure refactor, no behavior change.
     `InstallScreen.kt:411`
 - [x] **6.4 Elvis on non-null type** — `DialogPrepareContent.kt:59`
 - [x] **6.5 Unchecked casts** — `SyncViewModel.kt:57-58`
+- [x] **6.6 Follow-up sweep** — `BatchInstallSheet.kt` MergeType → AutoMirrored;
+    `PermissionCenterSheet.kt` redundant `else` on exhaustive `when`;
+    `ApkScanner.kt` redundant elvis on non-null. (Left: `unsafeCheckOpNoThrow`,
+    `Thread.id` — need non-trivial API replacements, deferred.)
 
 ---
 

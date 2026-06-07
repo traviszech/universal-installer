@@ -252,7 +252,6 @@ internal fun PermissionCenterSheet(
                                                     PermKind.Install -> isInstallGranted(context)
                                                     PermKind.Storage -> isAllFilesAccessGranted(context)
                                                     PermKind.Usage -> isUsageAccessGranted(context)
-                                                    else -> true
                                                 }
                                             }
                                         }

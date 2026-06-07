@@ -1,6 +1,5 @@
 package app.pwhs.universalinstaller.presentation.install.dialog
 
-import android.graphics.BitmapFactory
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Image
@@ -46,16 +45,13 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import app.pwhs.universalinstaller.R
 import app.pwhs.universalinstaller.presentation.install.DialogTarget
-import java.io.File
 import kotlinx.coroutines.launch
 
 @Composable
 private fun TargetIcon(iconPath: String?, sizeDp: Int = 64) {
-    val bitmap = remember(iconPath) {
-        runCatching {
-            iconPath?.takeIf { File(it).exists() }?.let { BitmapFactory.decodeFile(it) }
-        }.getOrNull()
-    }
+    // Decode is served from DialogIconCache so re-opening the dialog for the same
+    // APK (e.g. Retry) doesn't re-decode on the main thread.
+    val bitmap = remember(iconPath) { DialogIconCache.get(iconPath) }
     if (bitmap != null) {
         Image(
             bitmap = bitmap.asImageBitmap(),
