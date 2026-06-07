@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -52,6 +53,7 @@ import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
@@ -77,6 +79,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
@@ -133,13 +136,30 @@ internal fun ApkInfoContent(
         }
     }
 
+    val isDowngrade = apkInfo.installedVersionCode != null &&
+            apkInfo.installedVersionCode > 0 &&
+            apkInfo.versionCode < apkInfo.installedVersionCode
+
+    // Outer container: capped to 92% of screen height when expanded so the sheet never
+    // goes edge-to-edge — that left no scrim to tap and made drag-to-dismiss only work
+    // from the very top. We use an explicit heightIn(max) rather than fillMaxHeight(fraction)
+    // because the latter is a no-op when ModalBottomSheet hands down an unbounded height
+    // constraint; an absolute max caps regardless and still gives the weighted scroll
+    // child a bounded parent. When collapsed the content is short, so we let it wrap.
+    // The scroll area is weighted and the action buttons live in a fixed footer below it,
+    // so Cancel is always reachable without scrolling or fighting the drag gesture.
+    val maxSheetHeight = (LocalConfiguration.current.screenHeightDp * 0.92f).dp
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .animateContentSize()
+            .then(if (isExpanded) Modifier.heightIn(max = maxSheetHeight) else Modifier),
+    ) {
+      Column(
+        modifier = (if (isExpanded) Modifier.weight(1f) else Modifier)
+            .fillMaxWidth()
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 24.dp)
-            .padding(bottom = 32.dp),
+            .padding(top = 8.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         // Local copy so null-checks smart-cast (delegated produceState property can't).
@@ -214,10 +234,6 @@ internal fun ApkInfoContent(
         }
 
         Spacer(Modifier.height(16.dp))
-
-        val isDowngrade = apkInfo.installedVersionCode != null &&
-                apkInfo.installedVersionCode > 0 &&
-                apkInfo.versionCode < apkInfo.installedVersionCode
 
         FlowRow(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -299,9 +315,21 @@ internal fun ApkInfoContent(
             }
         }
 
-        Spacer(Modifier.height(24.dp))
+        Spacer(Modifier.height(16.dp))
+      } // end scroll area
 
-        Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        // Fixed footer — sits outside the scroll so the action row is always on screen.
+        // A hairline divider hints there's scrollable content above it when expanded.
+        if (isExpanded) {
+            HorizontalDivider(thickness = 0.5.dp, color = MaterialTheme.colorScheme.outlineVariant)
+        }
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp)
+                .padding(top = 12.dp, bottom = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
             if (!isExpanded) {
                 FilledTonalButton(
                     onClick = { isExpanded = true },
