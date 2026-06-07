@@ -25,6 +25,7 @@ import androidx.compose.material.icons.rounded.DriveFileRenameOutline
 import androidx.compose.material.icons.rounded.Layers
 import androidx.compose.material.icons.automirrored.rounded.List
 import androidx.compose.material.icons.rounded.SettingsApplications
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -85,6 +86,11 @@ fun ProfileEditScreen(
     var bypassLowTargetSdk by remember { mutableStateOf<Boolean?>(null) }
     var allUsers by remember { mutableStateOf<Boolean?>(null) }
 
+    // True from the moment Save is tapped until the DataStore write commits and we
+    // finish the activity. Drives the spinner + disabled Save action so the user
+    // can't double-tap (which would enqueue a second write / second finish).
+    var isSaving by remember { mutableStateOf(false) }
+
     val originalProfile = remember(profileId, uiState.installerProfiles) {
         uiState.installerProfiles.find { it.id == profileId }
     }
@@ -105,6 +111,7 @@ fun ProfileEditScreen(
 
     ProfileEditUi(
         isNew = profileId == null,
+        isSaving = isSaving,
         name = name,
         onNameChange = { name = it },
         installerPkg = installerPkg,
@@ -127,7 +134,8 @@ fun ProfileEditScreen(
         onAllUsersChange = { allUsers = it },
         onBack = { (context as? android.app.Activity)?.finish() },
         onSave = {
-            if (name.isNotBlank()) {
+            if (name.isNotBlank() && !isSaving) {
+                isSaving = true
                 val profile = (originalProfile ?: InstallerProfile(id = UUID.randomUUID().toString(), name = "")).copy(
                     name = name,
                     installerPackageName = installerPkg.ifBlank { null },
@@ -139,8 +147,10 @@ fun ProfileEditScreen(
                     bypassLowTargetSdk = bypassLowTargetSdk,
                     allUsers = allUsers,
                 )
-                viewModel.saveProfile(profile)
-                (context as? android.app.Activity)?.finish()
+                // finish() only after the write commits — see saveProfile's doc.
+                viewModel.saveProfile(profile) {
+                    (context as? android.app.Activity)?.finish()
+                }
             }
         }
     )
@@ -150,6 +160,7 @@ fun ProfileEditScreen(
 @Composable
 private fun ProfileEditUi(
     isNew: Boolean,
+    isSaving: Boolean,
     name: String,
     onNameChange: (String) -> Unit,
     installerPkg: String,
@@ -197,12 +208,19 @@ private fun ProfileEditUi(
                     }
                 },
                 actions = {
-                    IconButton(onClick = onSave, enabled = name.isNotBlank()) {
-                        Icon(
-                            imageVector = Icons.Rounded.Check,
-                            contentDescription = stringResource(R.string.profile_save),
-                            tint = if (name.isNotBlank()) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f)
-                        )
+                    IconButton(onClick = onSave, enabled = name.isNotBlank() && !isSaving) {
+                        if (isSaving) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(24.dp),
+                                strokeWidth = 2.dp,
+                            )
+                        } else {
+                            Icon(
+                                imageVector = Icons.Rounded.Check,
+                                contentDescription = stringResource(R.string.profile_save),
+                                tint = if (name.isNotBlank()) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f)
+                            )
+                        }
                     }
                 },
                 scrollBehavior = scrollBehavior,

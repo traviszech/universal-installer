@@ -340,6 +340,7 @@ private fun ProfilePickerCard(
         defaultExpanded = profiles.isNotEmpty()
     ) {
         if (profiles.isEmpty()) {
+            val context = LocalContext.current
             Column(modifier = Modifier.padding(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(
                     text = "No profiles created yet.",
@@ -347,10 +348,27 @@ private fun ProfilePickerCard(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Text(
-                    text = "Go to Settings -> Installer Profiles to create one and save your favorite install configurations.",
+                    text = "Save your favorite install configurations as a profile to reuse them.",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
+                // Inline CTA — opens the profile editor directly (profileId omitted → new profile)
+                // so the user never has to hunt through Settings → Installer Profiles first.
+                TextButton(
+                    onClick = {
+                        context.startActivity(
+                            android.content.Intent(
+                                context,
+                                app.pwhs.universalinstaller.presentation.setting.profile.edit.ProfileEditActivity::class.java,
+                            )
+                        )
+                    },
+                    contentPadding = PaddingValues(horizontal = 8.dp),
+                ) {
+                    Icon(Icons.Rounded.Badge, null, modifier = Modifier.size(18.dp))
+                    Spacer(Modifier.width(8.dp))
+                    Text(stringResource(R.string.profile_create_title))
+                }
             }
         } else {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {

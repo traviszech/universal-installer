@@ -91,15 +91,16 @@ gives at least one recovery path.
 
 ## Phase 4 — Settings polish (~½ day)
 
-- [ ] **4.1 Collapse Installation section**
-  - Wrap Shizuku-options / Root-options sections in `ExpandableSection`
-    composable (already exists?) defaulted closed. Today they're always open.
-- [ ] **4.2 Inline "Create profile" CTA** — `ApkInfoContent.kt:342`
-  - Empty-state currently reads "Go to Settings → Installer Profiles". Add a
-    TextButton that opens `ProfileEditActivity` with `profileId=null`.
-- [ ] **4.3 Save state in ProfileEdit** — `ProfileEditScreen.kt:124`
-  - Disable Save button + show small `CircularProgressIndicator` while
-    `viewModel.saveProfile` is in flight. Re-enable on completion before finish.
+- [x] **4.1 Collapse Installation section**
+  - Added `collapsible` + `defaultExpanded` params to the shared `SettingsSection`
+    composable. Shizuku-options / Root-options sections now start collapsed.
+- [x] **4.2 Inline "Create profile" CTA** — `ApkInfoContent.kt`
+  - Empty-state ProfilePickerCard now shows a TextButton that opens
+    `ProfileEditActivity` directly (profileId omitted → new profile).
+- [x] **4.3 Save state in ProfileEdit** — `ProfileEditScreen.kt`
+  - `saveProfile` gained an `onSaved` callback; the screen shows a spinner and
+    disables Save while the write is in flight, finishing only after it commits
+    (fixes a latent write-cancellation on `finish()`).
 
 ---
 

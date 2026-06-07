@@ -509,7 +509,14 @@ class SettingViewModel(
         }
     }
 
-    fun saveProfile(profile: InstallerProfile) {
+    /**
+     * Persist [profile], then invoke [onSaved] once the DataStore write has fully
+     * committed. The callback matters because the edit screen finishes its activity
+     * on save — finishing before the write completes would cancel this coroutine
+     * (viewModelScope is tied to that activity's VM) and silently drop the profile.
+     * viewModelScope runs on Main.immediate, so [onSaved] is safe to call finish() from.
+     */
+    fun saveProfile(profile: InstallerProfile, onSaved: () -> Unit = {}) {
         viewModelScope.launch {
             dataStore.edit { prefs ->
                 val current = ProfileManager.parseProfiles(prefs[PreferencesKeys.INSTALLER_PROFILES])
@@ -521,6 +528,7 @@ class SettingViewModel(
                 }
                 prefs[PreferencesKeys.INSTALLER_PROFILES] = ProfileManager.serializeProfiles(updated)
             }
+            onSaved()
         }
     }
 

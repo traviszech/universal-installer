@@ -243,6 +243,8 @@ private fun SettingUi(
                     SettingsSection(
                         title = stringResource(R.string.setting_section_shizuku_options),
                         icon = Icons.Rounded.AdminPanelSettings,
+                        collapsible = true,
+                        defaultExpanded = false,
                     ) {
                         OptionGroupHeader(stringResource(R.string.setting_shizuku_options_install_group))
                         OptionSwitch(
@@ -313,6 +315,8 @@ private fun SettingUi(
                     SettingsSection(
                         title = stringResource(R.string.setting_section_root_options),
                         icon = Icons.Rounded.Key,
+                        collapsible = true,
+                        defaultExpanded = false,
                     ) {
                         OptionSwitch(
                             title = stringResource(R.string.setting_root_replace),
