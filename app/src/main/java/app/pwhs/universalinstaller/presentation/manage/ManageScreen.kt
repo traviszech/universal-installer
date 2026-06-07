@@ -113,6 +113,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import app.pwhs.universalinstaller.R
 import app.pwhs.universalinstaller.domain.model.InstalledApp
+import app.pwhs.universalinstaller.presentation.composable.UniversalSearchBar
 import app.pwhs.universalinstaller.presentation.composable.EmptyStateView
 import app.pwhs.universalinstaller.presentation.composable.ShimmerBox
 import app.pwhs.universalinstaller.presentation.composable.InstallerModeBadge
@@ -722,49 +723,14 @@ private fun UninstallUi(
 
             // Search bar — only mounted when the user has tapped the top-bar search icon,
             // freeing up vertical space for the list when search isn't active.
-            AnimatedVisibility(
-                visible = !uiState.isSelectionMode && searchActive,
-                enter = fadeIn() + expandVertically(),
-                exit = fadeOut() + shrinkVertically(),
-            ) {
-                SearchBar(
-                    inputField = {
-                        SearchBarDefaults.InputField(
-                            query = uiState.searchQuery,
-                            onQueryChange = onSearchQueryChanged,
-                            onSearch = {},
-                            expanded = false,
-                            onExpandedChange = {},
-                            placeholder = { Text(stringResource(R.string.uninstall_search_hint)) },
-                            leadingIcon = {
-                                Icon(
-                                    imageVector = Icons.Rounded.Search,
-                                    contentDescription = null
-                                )
-                            },
-                            trailingIcon = if (uiState.searchQuery.isNotEmpty()) {
-                                {
-                                    IconButton(onClick = { onSearchQueryChanged("") }) {
-                                        Icon(
-                                            imageVector = Icons.Rounded.Close,
-                                            contentDescription = stringResource(
-                                                R.string.uninstall_search_clear_cd
-                                            ),
-                                        )
-                                    }
-                                }
-                            } else null,
-                            modifier = Modifier.focusRequester(searchFocusRequester),
-                        )
-                    },
-                    expanded = false,
-                    onExpandedChange = {},
-                    windowInsets = WindowInsets(0),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                ) {}
-            }
+            UniversalSearchBar(
+                query = uiState.searchQuery,
+                onQueryChange = onSearchQueryChanged,
+                active = !uiState.isSelectionMode && searchActive,
+                onActiveChange = { searchActive = it },
+                placeholder = stringResource(R.string.uninstall_search_hint),
+                focusRequester = searchFocusRequester,
+            )
 
             if (!uiState.isSelectionMode) {
                 Row(
