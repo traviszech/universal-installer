@@ -1,4 +1,4 @@
-package app.pwhs.tv
+package app.pwhs.tv.presentation.splash
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -27,6 +27,7 @@ import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Surface
 import androidx.tv.material3.Text
+import app.pwhs.tv.R
 
 /** Brand splash: logo + name + slogan, shown briefly on launch. */
 @OptIn(ExperimentalTvMaterial3Api::class)

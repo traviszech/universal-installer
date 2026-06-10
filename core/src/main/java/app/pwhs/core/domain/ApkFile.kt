@@ -6,4 +6,5 @@ data class ApkFile(
     val displayName: String,
     val sizeBytes: Long,
     val isBundle: Boolean,
+    val metadata: PackageMetadata? = null,
 )

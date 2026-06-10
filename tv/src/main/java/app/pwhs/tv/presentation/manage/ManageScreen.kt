@@ -1,4 +1,4 @@
-package app.pwhs.tv
+package app.pwhs.tv.presentation.manage
 
 import android.content.Intent
 import android.net.Uri
@@ -23,9 +23,9 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -35,14 +35,15 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import app.pwhs.core.data.AppRepository
+import androidx.lifecycle.viewmodel.compose.viewModel
 import app.pwhs.core.domain.InstalledApp
+import app.pwhs.tv.R
+import app.pwhs.tv.formatSize
+import app.pwhs.tv.rememberAppIcon
 import androidx.tv.material3.Card
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 
 /**
  * Manage destination: a D-pad list of installed apps with icon, version, size and badges.
@@ -50,9 +51,12 @@ import kotlinx.coroutines.withContext
  */
 @OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
-fun ManageScreen(repo: AppRepository, modifier: Modifier = Modifier) {
-    var apps by remember { mutableStateOf<List<InstalledApp>>(emptyList()) }
-    var loading by remember { mutableStateOf(true) }
+fun ManageScreen(
+    modifier: Modifier = Modifier,
+    viewModel: ManageViewModel = viewModel()
+) {
+    val apps by viewModel.apps.collectAsState()
+    val loading by viewModel.isLoading.collectAsState()
     var reloadTick by remember { mutableIntStateOf(0) }
 
     val uninstallLauncher = rememberLauncherForActivityResult(
@@ -60,9 +64,7 @@ fun ManageScreen(repo: AppRepository, modifier: Modifier = Modifier) {
     ) { reloadTick++ }
 
     LaunchedEffect(reloadTick) {
-        loading = true
-        apps = withContext(Dispatchers.IO) { repo.getInstalledApps(includeSystem = false) }
-        loading = false
+        viewModel.loadApps()
     }
 
     Column(

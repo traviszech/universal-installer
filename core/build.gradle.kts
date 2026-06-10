@@ -35,6 +35,10 @@ dependencies {
     api(libs.kotlinx.coroutines.android)
     // LAN receiver server (reused from the mobile sync feature's stack).
     implementation(libs.nanohttpd)
+
+    // Ackpine for APK/bundle parsing
+    api(libs.bundles.ackpine)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.junit)

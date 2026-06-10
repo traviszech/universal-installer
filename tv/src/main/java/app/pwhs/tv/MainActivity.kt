@@ -12,6 +12,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import app.pwhs.core.data.AppRepository
+import app.pwhs.tv.presentation.splash.SplashScreen
 import app.pwhs.tv.ui.theme.UniversalInstallerTheme
 import kotlinx.coroutines.delay
 
@@ -20,7 +21,6 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         // Start the LAN receiver so a phone can push APKs to this TV.
         ReceiverService.start(applicationContext)
-        val repo = AppRepository(applicationContext)
         setContent {
             UniversalInstallerTheme {
                 var showSplash by remember { mutableStateOf(true) }
@@ -28,7 +28,7 @@ class MainActivity : ComponentActivity() {
                     delay(1800)
                     showSplash = false
                 }
-                TvApp(repo = repo)
+                TvApp()
                 AnimatedVisibility(visible = showSplash, enter = fadeIn(), exit = fadeOut()) {
                     SplashScreen()
                 }

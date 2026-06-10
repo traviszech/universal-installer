@@ -1,4 +1,4 @@
-package app.pwhs.tv
+package app.pwhs.tv.presentation.settings
 
 import android.content.Intent
 import android.net.Uri
@@ -28,6 +28,8 @@ import androidx.tv.material3.Card
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
+import app.pwhs.tv.R
+import app.pwhs.tv.ui.components.QrCode
 
 private const val REPO_URL = "https://github.com/pass-with-high-score/universal-installer"
 

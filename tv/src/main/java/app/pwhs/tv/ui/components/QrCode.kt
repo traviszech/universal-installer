@@ -1,4 +1,4 @@
-package app.pwhs.tv
+package app.pwhs.tv.ui.components
 
 import android.graphics.Bitmap
 import android.graphics.Color
@@ -17,6 +17,7 @@ import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
+import app.pwhs.tv.R
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.EncodeHintType
 import com.google.zxing.qrcode.QRCodeWriter

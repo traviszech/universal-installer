@@ -1,5 +1,6 @@
 package app.pwhs.core.receiver
 
+import app.pwhs.core.domain.PackageMetadata
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -12,6 +13,7 @@ data class ReceivedApk(
     val path: String,
     val fileName: String,
     val sizeBytes: Long,
+    val metadata: PackageMetadata? = null,
 )
 
 sealed interface ReceiverStatus {
